@@ -12,7 +12,7 @@ import { removeSpace } from "@/utils/utils";
 import { validationBuilder } from "@/utils/validator";
 import { AntDesign, Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, View, TouchableOpacity,Text,Image } from "react-native";
+import { SafeAreaView, View, TouchableOpacity,Text,Image, Pressable } from "react-native";
 import { useSelector } from "react-redux";
 
 const SigninScreen = ({navigation}:any) => {
@@ -21,6 +21,7 @@ const SigninScreen = ({navigation}:any) => {
   const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
     (state: any) => state.modal
   );
+  
   const {authError} = useSelector((state: any) => state.auth);
   
   const [getUserData, { isLoading, isError, error, isSuccess }] = useGetResourceMutation();
@@ -126,8 +127,8 @@ const SigninScreen = ({navigation}:any) => {
       style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
       <View
         style={[
-          globalstyles.card,
-          {backgroundColor: theme.background },
+          
+          {backgroundColor: theme.background,marginVertical:80,height:'100%' },
         ]}
       >
         <View style={[{ alignSelf: "center",paddingVertical:30 }]}>
@@ -137,19 +138,20 @@ const SigninScreen = ({navigation}:any) => {
             width:80,
             height:80}}
 
-          source={require("../../assets/images/icon.png")}
+          source={require("../assets/images/icon.png")}
         />
       </View>
 
         {Input({
           theme: theme,
           value: email,
+          inputStyles:{backgroundColor:'rgba(0,0,0,0.03)',borderWidth:0.5},
           onChangeText: (val) => setEmail(val),
           setFocus: setFocused,
           maxLength: 11,
           focus: focus,
           Icon: AntDesign,
-          icon_name: "user",
+          icon_name: "mail",
           placeholder: "Email",
           current: "email",
           errorMessage: emailError,
@@ -158,6 +160,7 @@ const SigninScreen = ({navigation}:any) => {
         {Input({
           theme: theme,
           value: password,
+          inputStyles:{backgroundColor:'rgba(0,0,0,0.03)',borderWidth:0.5},
           secureEntry: showPass,
           showVisButton: true,
           showVisibility: setShowPass,
@@ -174,25 +177,32 @@ const SigninScreen = ({navigation}:any) => {
 
         <TouchableOpacity
           onPress={loginUser}
-          style={[
+          style={[ globalstyles.columnCenter,
             {
-              backgroundColor: "green",
-              paddingBottom: 7,
+              backgroundColor: "#b35900",
               width: "80%",
               alignSelf: "center",
-              marginVertical:8
+              marginVertical:12,
+              height:44
             }
           ]}
         >
-          <Text style={[{color:'green'}]}>Login</Text>
+          <Text style={[{color:'white',paddingVertical:5,textAlign:'center',fontWeight:'500'}]}>Login</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
+        <Pressable
           onPress={()=>goToScreen('Reset Password')}
           style={[{marginVertical:8}]}
         >
-          <Text style={[{color:'green'}]}>Forgot Password?</Text>
-        </TouchableOpacity>
+          <Text style={[{color:'green',textAlign:'center'}]}>Forgot Password?</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={()=>goToScreen('signup')}
+          style={[{marginVertical:8}]}
+        >
+          <Text style={[{color:theme.text,textAlign:'center',textDecorationLine:'underline'}]}>I don't have an account?</Text>
+        </Pressable>
 
         <Toast
           visible={openModal}

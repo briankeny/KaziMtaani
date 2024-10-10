@@ -6,7 +6,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView>
         <View>
-          <Text>Hello</Text>
+          <Text>jobs</Text>
         </View>
     </SafeAreaView>
   );

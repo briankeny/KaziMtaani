@@ -4,7 +4,7 @@ import React from 'react'
 const JobStacklayout = () => {
   return (
    <Stack>
-        <Stack.Screen name='alljobs'/>
+        <Stack.Screen name='jobs'/>
         <Stack.Screen name='[jobid]'/>
    </Stack>
   )

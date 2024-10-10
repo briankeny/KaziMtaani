@@ -136,6 +136,8 @@ interface InputProps{
   icon_name:string;
   onChangeText:(val:any)=>void;
   value:any;
+  focusColor?:string;
+  inputStyles?:StyleProp<ViewStyle>;
   secureEntry?:boolean;
   placeholder:string;
   maxLength?:number;
@@ -146,7 +148,7 @@ interface InputProps{
 }
 
 
-export function Input({theme,setFocus,current,value,secureEntry=false,placeholder='',
+export function Input({theme,setFocus,current,value,secureEntry=false,placeholder='',focusColor="orange",inputStyles,
   showVisibility,errorMessage,keyboardType='default',
   showVisButton=false,maxLength=18,
   focus,Icon,icon_name,onChangeText}:InputProps){
@@ -154,11 +156,11 @@ export function Input({theme,setFocus,current,value,secureEntry=false,placeholde
     <View style={[globalstyles.column]}>
     <View style={[globalstyles.row,
       globalstyles.inputBorder,{ borderColor: "#555",alignSelf:'center' },
-      focus == current && { borderColor: "green" }]}>
+      focus == current && { borderColor: focusColor },inputStyles]}>
 
   <Icon name={icon_name} 
    style={[{position:'absolute',top:10, left:15}]}
-  size={20} color={theme && theme.text} />    
+  size={20} color={ focus == current? focusColor: theme.text} />    
 
   <TextInput
     value={value}

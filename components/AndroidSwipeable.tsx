@@ -6,7 +6,7 @@ import { MaterialIcons as Icon } from '@expo/vector-icons';
 const AnimatedIcon = Animated.createAnimatedComponent(Icon);
 
 interface AndroidSwipeableProps {
-  children:any
+  children?:any
   swipeableRowRef ?:any; 
   deleteAction ?:()=>void;
   archiveAction?:()=>void;

@@ -1,5 +1,6 @@
 import { Input } from "@/components/Inputs";
 import Toast from "@/components/Toast";
+import { logo } from "@/images/images";
 import {
   useGetResourceMutation,
   usePostNoAuthMutation,
@@ -138,7 +139,7 @@ const SigninScreen = ({navigation}:any) => {
             width:80,
             height:80}}
 
-          source={require("../assets/images/icon.png")}
+          source={logo}
         />
       </View>
 

@@ -64,5 +64,10 @@ export const globalstyles = StyleSheet.create({
         borderColor: "#777",
         borderWidth: 1,
         marginBottom: 10
-      }
+      },
+      error: {
+        textAlign:'center',
+        color: 'red',
+        paddingVertical: 10,
+      },
 });

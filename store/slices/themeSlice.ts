@@ -26,7 +26,7 @@ export const colorslight:Theme ={
 
 const initialState = {
     isNightMode : false,
-    theme: colorsdark,
+    theme: colorslight,
     current_theme:'default'
 }
 

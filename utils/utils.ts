@@ -40,3 +40,77 @@ export function dateDifferenceWithUnit(startDate:any) {
   const difference = Math.floor(timeDifference / 1000);
   return `${difference} second${difference > 1 ? "s" : ""} ago`;
 }
+
+
+
+// async function sendEmailOTP(email:number) {
+//   try{
+//     const data = [{
+//       email_adress:email,
+//       type:'email',
+//       minlength:11, 
+//       canBeEmpty:false
+//     }]
+//     const validated = validationBuilder(data)
+//     const resp = await postData({data:validated,endpoint:'/email-otp/'}).unwrap()
+//     if (resp.isSuccess){
+//       const message = resp?.data?.message
+//        //  Create a notification
+//       rendermodal({
+//         dispatch: dispatch,
+//         header: "Success",
+//         status: "success",
+//         content: message,
+//       })
+//        //  Proceed to next step
+//        setIndex(index+1)
+//     } 
+//     else{
+//       throw new Error('Server Error')
+//     }
+//   }
+//   catch(error:any){
+//     rendermodal({
+//       dispatch: dispatch,
+//       header: "Error",
+//       status: "error",
+//       content: error.message,
+//     })
+//   }
+// }
+
+// async function verifyEmailOTP(emailotp:string) {
+//   try{
+//     const data = [{
+//       email_otp:emailotp,
+//       type:'email',
+//       minlength:11, 
+//       canBeEmpty:false
+//     }]
+//     const validated = validationBuilder(data)
+//     const resp = await postData({data:validated,endpoint:'/email-otp/verif/'}).unwrap()
+//     if (resp.isSuccess){
+//       const message = resp?.data?.message
+//        //  Create a notification
+//       rendermodal({
+//         dispatch: dispatch,
+//         header: "Success",
+//         status: "success",
+//         content: message,
+//       })
+//        //  Proceed to next step
+//        setIndex(index+1)
+//     } 
+//     else{
+//       throw new Error('Server Error')
+//     }
+//   }
+//   catch(error:any){
+//     rendermodal({
+//       dispatch: dispatch,
+//       header: "Error",
+//       status: "error",
+//       content: error.message,
+//     })
+//   }
+// }

@@ -18,7 +18,7 @@ interface TaggedInputProps {
   taggedInputStyles?: StyleProp<TextStyle>;
   taggedInputContainerStyles?: StyleProp<ViewStyle>;
   editable ?: boolean;
-  errorMessage?: string;
+  errorMessage?: string | any;
   caption?:string;
   captionStyles?: StyleProp<TextStyle>;
   captionContainerStyles?: StyleProp<ViewStyle>;

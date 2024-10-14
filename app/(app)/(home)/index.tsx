@@ -52,20 +52,21 @@ export default HomeScreen
 export function JobCard({item,theme}:any){
   const time = dateDifferenceWithUnit(item.date)
   return(
-    <View style={[globalstyles.card,{backgroundColor:theme.card,marginTop:1}]}>
+    <View style={[globalstyles.card,{backgroundColor:theme.cardBackground,marginTop:1,
+    borderColor:'green',borderWidth:1}]}>
 
         <View style={[globalstyles.rowWide]}>
         
           <View style={[globalstyles.row,{gap:10}]}>
               <Image source={logo} 
-              style={{width:80,height:80}}
+              style={{width:50,height:50,borderRadius:25}}
               />
               <View>
                 <Text 
                   style={{
                     fontWeight:'500',
                     paddingVertical:2,
-                    color:theme.color}}
+                    color:theme.text}}
                 >
                   Poster
                 </Text>
@@ -86,7 +87,7 @@ export function JobCard({item,theme}:any){
         </View>
 
 
-        <View style={[{marginVertical:20,padding:10,backgroundColor:'red'}]}>
+        <View style={[{marginVertical:20,padding:10}]}>
         <Text
          style={[{color:theme.text, fontWeight:'500'}]}
         >{item.title}</Text>
@@ -100,13 +101,13 @@ export function JobCard({item,theme}:any){
             {time}
           </Text>
           <TouchableOpacity
-        style={[{width:'50%',alignSelf:'center',
+        style={[{alignSelf:'center',
            borderWidth:1,
           borderRadius:20,borderColor:'#888'
         }]}
 
         ><Text style={[{textAlign:'center',color:theme.text,
-        fontWeight:'500',padding:5}]}>
+        fontWeight:'500',paddingHorizontal:10,paddingVertical:5}]}>
           Read More</Text>
           </TouchableOpacity>
 

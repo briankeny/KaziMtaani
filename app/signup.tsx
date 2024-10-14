@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, TextInput,Text, StyleSheet,Image, SafeAreaView,TouchableOpacity, Pressable } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { TaggedInput } from '@/components/Inputs';
@@ -8,11 +8,10 @@ import { globalstyles } from '@/styles/styles';
 import { AntDesign } from '@expo/vector-icons';
 import { usePostNoAuthMutation } from '@/store/services/authApi';
 import { validationBuilder } from '@/utils/validator';
-import { rendermodal } from '@/store/slices/modalSlice';
+import { clearModal, rendermodal } from '@/store/slices/modalSlice';
 import { router } from 'expo-router';
-import Swipper from '@/components/Swipper';
 import { logo } from '@/images/images';
-
+import Toast from '@/components/Toast';
 
 const SignUpScreen = () => {
   const dispatch = useAppDispatch()
@@ -25,35 +24,29 @@ const SignUpScreen = () => {
   const [openDD,setOpenDD] = useState<boolean>(false);
   const steps= [{title:`Step 1`},{title:`Step 2`},{title:`Step 3`},{title:`Final`}]
   
-  // const [phone_otp, setPhoneOTP] = useState('')
-  // const [email_otp, setEmailOTP] = useState('')
-
   const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
     (state: any) => state.modal
   );
-
-  // Function to navigate to specific page
-
+  
+  // Toggle Modal
+  function closeModal() {
+    dispatch(clearModal());
+    return true;
+  }
 
   async function sendPhoneOTP(data:any) {
+    if (!isLoading){
     try{
-      const mobile = data.mobile
-      const subdata = [{
-        mobile_number :mobile,
-        type:'phone_number',
-        minlength:8, 
-        canBeEmpty:false
-      }]
-      const validated = validationBuilder(subdata)
-      const resp = await postData({data: validated,endpoint:'/mobile-otp/'}).unwrap()
-      if (resp.isSuccess){
-        const message = resp?.data?.message
+      const num =  data["mobile_number"] 
+      const resp = await postData({data:{'mobile_number': `+254${num}`},endpoint:'/mobile-otp/'}).unwrap()
+      console.log('your response',resp)
+      if (resp){
          //  Create a notification
         rendermodal({
           dispatch: dispatch,
           header: "Success",
           status: "success",
-          content: message,
+          content: `OTP has been sent to +254${num}`,
         })
          //  Proceed to next step
          setIndex(index+1)
@@ -67,36 +60,38 @@ const SignUpScreen = () => {
         dispatch: dispatch,
         header: "Error",
         status: "error",
-        content: error.message,
+        content: "Phone number is incorrect",
       })
+    }
     }
   }
 
+  
   async function verifyOTP(data:any) {
-   try{
+  if (!isLoading){
+    try{
     const otp = data.otp
     const submit = [{
-      otp_code:otp,
+      otp:otp,
       type:'number',
       minlength:5, 
       canBeEmpty:false
     }]
     const validated = validationBuilder(submit)
-    const resp = await postData({data:validated,endpoint:'/auth/mobile-otp/verify/'}).unwrap()
+    const resp = await postData({data:validated,endpoint:'/verify-mobile-otp/'}).unwrap()
+    
     if (resp.isSuccess){
-      const message = resp?.data?.message
-       //  Create a notification
       rendermodal({
         dispatch: dispatch,
         header: "Success",
         status: "error",
-        content: message,
+        content: "OTP verification was successful!",
       })
        //  Proceed to next step
        setIndex(index+1)
     } 
     else{
-      throw new Error('Server Error')
+      throw new Error(`${resp.error ? resp.error :'Please provide a working mobile number'}`)
     }
   }
   catch(error:any){
@@ -106,10 +101,11 @@ const SignUpScreen = () => {
       status: "error",
       content: error.message,
     })
-  }
+  }}
   }
 
   async function registerUser(data:any){
+    if (!isLoading){
       try {
         const response = await postData({data:data,endpoint:'/user-registration/'}).unwrap()
         if (response){
@@ -120,7 +116,8 @@ const SignUpScreen = () => {
             status: "success",
             content: 'Your Account Has Been Created Successfully',
           })
-           //  Proceed to next step
+          
+          // Function to navigate to sign in page
           router.replace('/signin')
         } 
       } 
@@ -132,6 +129,7 @@ const SignUpScreen = () => {
           content: error.message,
         })
       }
+    }
   }
 
   function RegisterPhoneNumber(){
@@ -143,8 +141,7 @@ const SignUpScreen = () => {
           Add Your Phone Number
         </Text>
       <View style={[globalstyles.row,{width:'80%',marginVertical:30,
-      gap:10,
-      paddingLeft:35}]}>
+      gap:10,alignSelf:'center'}]}>
   
            <View style={[
             globalstyles.columnCenter,
@@ -171,23 +168,24 @@ const SignUpScreen = () => {
           <TextInput
             keyboardType={'numeric'}
             onChangeText={onChange}
-            maxLength={10}
+            maxLength={11}
             onBlur={()=>setFocus('')}
             onFocus={()=>setFocus('mobile')}
             style={{
               padding:5,
               borderColor: focused == 'mobile' ? "#b35900":theme.text,
               color:theme.text,
-              borderBottomWidth:1,width:'80%'}}
+              borderBottomWidth:1,
+              width:190}}
             value={value}
             placeholderTextColor={'#888'}
             placeholder="Phone Number" 
           />
-            {errors.mobile &&
-      <Text style={[globalstyles.error]}>{errors.mobile ? 'Mobile number is incorrect' :''  }</Text>}
+            {errors.mobile_number &&
+      <Text style={[globalstyles.error]}>{errors.mobile_number ? 'Mobile number is incorrect' :''  }</Text>}
           </View>
         )}
-        name="mobile"
+        name="mobile_number"
         defaultValue=""
       />
       </View>
@@ -514,6 +512,13 @@ const SignUpScreen = () => {
     }
   }
 
+  useEffect(() => {
+    if (isError) {
+      console.log('The error: ' + JSON.stringify(error, null, 2));
+    }
+  }, [isError]);
+  
+
   return (
     <SafeAreaView
     style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
@@ -551,6 +556,14 @@ const SignUpScreen = () => {
           }]}>
            {OrderScreens(index)}
         </View>
+
+        <Toast
+          visible={openModal}
+          status={modalStatus}
+          onPress={() => closeModal()}
+          modalHeader={modalHeader}
+          modalContent={modalContent}
+        />
      
       </View>
     </SafeAreaView>

@@ -1,140 +1,158 @@
-import { logo } from '@/images/images'
-import { useGetResourceMutation } from '@/store/services/authApi'
-import { useAppDispatch } from '@/store/store'
-import { globalstyles } from '@/styles/styles'
-import { dateDifferenceWithUnit } from '@/utils/utils'
-import React, { useRef } from 'react'
-import { SafeAreaView, View,Text, Pressable,Image, FlatList, TouchableOpacity } from 'react-native'
-import { useSelector } from 'react-redux'
+import React from "react";
+import { globalstyles } from "@/styles/styles";
+import { SafeAreaView, TouchableOpacity, View, Text } from "react-native";
+import { useSelector } from "react-redux";
+import { HomeMenuProps } from "@/types/types";
+import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 const HomeScreen = () => {
-  const dispatch = useAppDispatch();
-  const swipeableRowRef = useRef<any>(null)
   const { theme, isNightMode } = useSelector((state: any) => state.theme);
-  // const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
-  //   (state: any) => state.modal
-  // ); 
-  // const {jobads} = useSelector((state:any)=>state.messages) 
-  const [getUserData, { data, isLoading, isError, error, isSuccess }] = useGetResourceMutation();
+  const { userData } = useSelector((state: any) => state.auth);
 
-  async function fetchJobAds() {
-    try{
-       await getUserData({endpoint:'/job-adverts/'})
+
+    function goToScreen(screen:any){
+      router.replace(screen)
     }
-    catch(error:any){
-      console.log(error.message)
-    }
-  }
+
+
+  const Menu = ({
+    Icon,
+    onPress,
+    iconSize = 24,
+    iconColor = "#888",
+    contentTextColor="#fff",
+    headerTextColor='#fff',
+    header = "",
+    content = "",
+    iconName = "",
+    backColor = "",
+  }: HomeMenuProps) => {
+    const { theme, isNightMode } = useSelector((state: any) => state.theme);
+
+    return (
+      <TouchableOpacity
+        style={[
+          globalstyles.card,
+          { width: "35%", margin: 4, elevation: 6 },
+          { backgroundColor: backColor ? backColor : theme.card },
+        ]}
+        onPress={onPress}
+      >
+        <View style={[globalstyles.column, { paddingLeft: 5 }]}>
+          <Text style={[{ color:contentTextColor,fontSize:16,fontWeight:600 }]}>
+            {content}
+          </Text>
+          <Text style={[ { color:headerTextColor,fontSize:11,paddingVertical:5 }]}>
+            {header}
+          </Text>
+        </View>
+
+        <Icon
+          style={[{ position: "absolute", right: 25, top:10 }]}
+          name={iconName}
+          size={iconSize}
+          color={iconColor}
+        />
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <SafeAreaView
-      style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
-        <FlatList
-          keyExtractor={(item)=> item.advert_id.toString()}
-          data={jobexamples}
-          renderItem={
-            ({item,index}:{item:any,index:number})=>
-              <JobCard
-              item={item}
-              theme={theme}
-              key={index}
-              />
-          }
-          
+      style={[globalstyles.safeArea, { backgroundColor: theme.background }]}
+    >
 
-        />
+      <View style={[globalstyles.card,{elevation:2,backgroundColor:'rgb(0, 102, 51)',width:'80%'}]}>
+
+            <Text style={[{color:theme.text}]}>
+              Hi Brian
+            </Text>
+
+          <View style={[globalstyles.row,{alignSelf:'center',padding:10,gap:10}]}>
+            <Text style={[{color:'#fff',fontSize:30,fontWeight:'600'}]}>300</Text>
+            <Text style={[{color:'#fff',paddingTop:8}]}>Job posts</Text>
+          </View>
+
+        <View style={[globalstyles.rowEven]}>
+          <View style={[globalstyles.row,{gap:20}]}>
+            <Text style={[{color:'#fff'}]}>Open</Text>
+            <Text style={[{color:'#fff',fontWeight:'600',fontSize:18}]}>{230}</Text>
+          </View>
+
+          <View style={[globalstyles.row,{gap:20}]}>
+            <Text style={[{color:'#fff'}]}>Closed</Text>
+            <Text style={[{color:'#fff',fontWeight:'600',fontSize:18}]}>{70}</Text>
+          </View>
+        </View>
+
+      </View>
+
+
+      <Text style={[{color:theme.text,fontWeight:'500',padding:20}]}>My Analytics</Text>
+            
+      <View style={[globalstyles.rowEven,{overflow:'hidden',flexWrap:'wrap',columnGap:2}]}>
+
+       <Menu
+              header="Profile visits"
+              backColor='rgb(177, 137, 2)'
+              content="360"
+              iconColor="#fff"
+              iconSize={21}
+              iconName="users"
+              Icon={FontAwesome}
+              onPress={() => goToScreen("Transport")}
+            />
+
+            <Menu
+              header="Impressions"
+              backColor='rgb(255, 255, 255)'
+              headerTextColor={'#444'}
+              contentTextColor={'#222'}
+              content="4000"
+              iconColor={'red'}
+              iconSize={28}
+              iconName="users"
+              Icon={FontAwesome}
+              onPress={() => goToScreen("Transport")}
+            />
+
+
+            <Menu
+              header="Search Appearance"
+              backColor='rgb(106, 90, 205)'
+              content="40"
+              iconColor="#fff"
+              iconSize={21}
+              iconName="search"
+              Icon={MaterialIcons}
+              onPress={() => goToScreen("Transport")}
+            />
+
+            <Menu
+              header="Reviews"
+              backColor='rgb(198, 131, 2)'
+              content="4"
+              iconColor="#fff"
+              iconSize={28}
+              iconName="emoji-transportation"
+              Icon={MaterialIcons}
+              onPress={() => goToScreen("Transport")}
+            />
+          </View>
+
+
     </SafeAreaView>
+  );
+};
+
+export default HomeScreen;
+
+
+export function JobList (){
+  return( 
+  <View>
+
+  </View>
   )
 }
-
-export default HomeScreen
-
-
-export function JobCard({item,theme}:any){
-  const time = dateDifferenceWithUnit(item.date)
-  return(
-    <View style={[globalstyles.card,{backgroundColor:theme.cardBackground,marginTop:1,
-    borderColor:'green',borderWidth:1}]}>
-
-        <View style={[globalstyles.rowWide]}>
-        
-          <View style={[globalstyles.row,{gap:10}]}>
-              <Image source={logo} 
-              style={{width:50,height:50,borderRadius:25}}
-              />
-              <View>
-                <Text 
-                  style={{
-                    fontWeight:'500',
-                    paddingVertical:2,
-                    color:theme.text}}
-                >
-                  Poster
-                </Text>
-                <Text 
-                  style={{color:'#888',fontSize:10}}
-                >
-                  @Poster
-                </Text>
-              </View>
-          </View>
-          
-          <View style={[globalstyles.column]}>
-            <Text style={[{color:theme.text,fontSize:11}]}>
-              {time}
-            </Text>
-          </View>
-        
-        </View>
-
-
-        <View style={[{marginVertical:20,padding:10}]}>
-        <Text
-         style={[{color:theme.text, fontWeight:'500'}]}
-        >{item.title}</Text>
-        <Text numberOfLines={1} 
-        style={[{color:theme.text}]}
-        ellipsizeMode='tail'>{item.description}</Text>
-        </View>
-       
-        <View style={[globalstyles.rowWide]}>
-          <Text style={[{color:theme.text,fontSize:11}]}>
-            {time}
-          </Text>
-          <TouchableOpacity
-        style={[{alignSelf:'center',
-           borderWidth:1,
-          borderRadius:20,borderColor:'#888'
-        }]}
-
-        ><Text style={[{textAlign:'center',color:theme.text,
-        fontWeight:'500',paddingHorizontal:10,paddingVertical:5}]}>
-          Read More</Text>
-          </TouchableOpacity>
-
-          <Text style={[{color:theme.text,fontSize:11}]}>
-            {time}
-          </Text>
-        </View>
-
-    </View>
-  )
-} 
-
-
-
-export const jobexamples = [
-  {
-    advert_id:1,
-    title:'Laundry Cleaner',
-    description: 'Iam Looking for a laundry cleaner around Kahawa Sukari to help me do my laundry today',
-    date:'2020-03-03',
-    status:'closed'
-  },
-  {
-    advert_id:2,
-    title:'Laundry Cleaner',
-    description: 'Iam Looking for a laundry cleaner around Kahawa Sukari to help me do my laundry today',
-    date:'2020-03-04',
-    status:'open'
-  }
-]

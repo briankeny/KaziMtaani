@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, TextInput,Text, StyleSheet,Image, SafeAreaView,TouchableOpacity, Pressable } from 'react-native';
-import { useForm, Controller } from 'react-hook-form';
 import { TaggedInput } from '@/components/Inputs';
 import { useAppDispatch } from '@/store/store';
 import { useSelector } from 'react-redux';
 import { globalstyles } from '@/styles/styles';
 import { AntDesign } from '@expo/vector-icons';
 import { usePostNoAuthMutation } from '@/store/services/authApi';
-import { validationBuilder } from '@/utils/validator';
+import { checkStrForPurelyNumbers, validationBuilder } from '@/utils/validator';
 import { clearModal, rendermodal } from '@/store/slices/modalSlice';
 import { router } from 'expo-router';
 import { logo } from '@/images/images';
@@ -15,15 +14,62 @@ import Toast from '@/components/Toast';
 
 const SignUpScreen = () => {
   const dispatch = useAppDispatch()
-  const { control, handleSubmit, formState: { errors } } = useForm();
   const [ postData , {isError,isLoading,isSuccess,error,data}] = usePostNoAuthMutation();
-  const {theme} = useSelector((state:any)=>state.theme)
+  const {theme, isNightMode} = useSelector((state:any)=>state.theme)
+ 
+  const [user,setUser] = useState <any>({
+     full_name : '',
+     mobile_number:'',
+     otp:'',
+     account_type: 'jobseeker',
+     password:'',
+     repeat_password:''
+  }) 
+  const [errors,setErrors] = useState <any>({})
+
+  const rules = [
+    {
+      full_name:user.full_name,
+      minlength:6, 
+      type:'string'
+    },
+    
+    {
+      mobile_number: user.mobile_number,
+      minlength:9,
+      type:'password'
+      },
+      {
+        otp:user.otp,
+        minlength:5,
+        type:"number"
+       },
+       {
+        account_type: user.account_type,
+        minlength:4,
+        type:'string'
+      },
+      {
+        password: user.password,
+        minlength:9,
+        type:'password'
+      },
+      {
+        repeat_password: user.repeat_password,
+        minlength:9,
+        type:'password'
+      }
+  ]
+
   const [focused,setFocus]  = useState<string>('')
-  const [index,setIndex] = useState(1);
-  const [account,setAccount] = useState('')
+  const [index,setIndex] = useState<number>(1);
   const [openDD,setOpenDD] = useState<boolean>(false);
   const steps= [{title:`Step 1`},{title:`Step 2`},{title:`Step 3`},{title:`Final`}]
   
+  function handleNumeric(val:string,setterFunc:any){
+    const clean = checkStrForPurelyNumbers(val)
+      setterFunc(clean)
+  }
   const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
     (state: any) => state.modal
   );
@@ -34,19 +80,19 @@ const SignUpScreen = () => {
     return true;
   }
 
-  async function sendPhoneOTP(data:any) {
+  async function sendPhoneOTP() {
     if (!isLoading){
     try{
-      const num =  data["mobile_number"] 
-      const resp = await postData({data:{'mobile_number': `+254${num}`},endpoint:'/mobile-otp/'}).unwrap()
-      console.log('your response',resp)
+      const data = [rules[0]]
+      const validated = validationBuilder(data) 
+      const resp = await postData({data:validated,endpoint:'/mobile-otp/'}).unwrap()
       if (resp){
          //  Create a notification
         rendermodal({
           dispatch: dispatch,
           header: "Success",
           status: "success",
-          content: `OTP has been sent to +254${num}`,
+          content: `OTP verification code has been sent to +254${user.mobile_number}!`,
         })
          //  Proceed to next step
          setIndex(index+1)
@@ -56,63 +102,55 @@ const SignUpScreen = () => {
       }
     }
     catch(error:any){
-      rendermodal({
-        dispatch: dispatch,
-        header: "Error",
-        status: "error",
-        content: "Phone number is incorrect",
-      })
+      setErrors(error)
     }
     }
   }
-
   
-  async function verifyOTP(data:any) {
+  function checkPersonalDetails(data:any) {
+     try{
+      const validated = validationBuilder(rules)
+      if(validated){
+        setIndex(index+1)
+      }
+     }
+     catch(err:any){
+      setErrors(err)
+     }
+  }
+
+  async function verifyOTP() {
   if (!isLoading){
     try{
-    const otp = data.otp
-    const submit = [{
-      otp:otp,
-      type:'number',
-      minlength:5, 
-      canBeEmpty:false
-    }]
-    const validated = validationBuilder(submit)
+    const data  = [rules[0], rules[1]]
+    const validated = validationBuilder(data)
     const resp = await postData({data:validated,endpoint:'/verify-mobile-otp/'}).unwrap()
-    
-    if (resp.isSuccess){
+    if (resp){
       rendermodal({
         dispatch: dispatch,
         header: "Success",
-        status: "error",
+        status: "success",
         content: "OTP verification was successful!",
       })
        //  Proceed to next step
        setIndex(index+1)
     } 
-    else{
-      throw new Error(`${resp.error ? resp.error :'Please provide a working mobile number'}`)
-    }
   }
   catch(error:any){
-    rendermodal({
-      dispatch: dispatch,
-      header: "Error",
-      status: "error",
-      content: error.message,
-    })
+    setErrors(error)
   }}
   }
 
-  async function registerUser(data:any){
+  async function registerUser(){
     if (!isLoading){
       try {
-        const response = await postData({data:data,endpoint:'/user-registration/'}).unwrap()
+        const validated = validationBuilder(rules)
+        const response = await postData({data:validated,endpoint:'/user-registration/'}).unwrap()
         if (response){
            //  Create a notification
           rendermodal({
             dispatch: dispatch,
-            header: "Success",
+            header: "Success!",
             status: "success",
             content: 'Your Account Has Been Created Successfully',
           })
@@ -153,21 +191,11 @@ const SignUpScreen = () => {
                 </Text>
            </View>
            
-           <Controller
-            control={control}
-            rules={{
-              required: 'Phone number is required',
-              minLength: { value: 8, message: 'Phone number must be at least 9 characters' },
-              pattern: {
-                value: /^[0-9]*$/,
-                message: 'Phone number can only contain numeric characters',
-              },
-            }}
-            render={({ field: { onChange, value } }) => (
+      
           <View>
           <TextInput
             keyboardType={'numeric'}
-            onChangeText={onChange}
+            onChangeText={(val)=>setUser(user.mobile_number = val)}
             maxLength={11}
             onBlur={()=>setFocus('')}
             onFocus={()=>setFocus('mobile')}
@@ -177,21 +205,18 @@ const SignUpScreen = () => {
               color:theme.text,
               borderBottomWidth:1,
               width:190}}
-            value={value}
+            value={user.mobile_number}
             placeholderTextColor={'#888'}
             placeholder="Phone Number" 
           />
             {errors.mobile_number &&
-      <Text style={[globalstyles.error]}>{errors.mobile_number ? 'Mobile number is incorrect' :''  }</Text>}
-          </View>
-        )}
-        name="mobile_number"
-        defaultValue=""
-      />
+            <Text style={[globalstyles.error]}>{errors.mobile_number ? 'Mobile number is incorrect' :''  }</Text>}
+        </View>
+      
       </View>
     
       <TouchableOpacity
-          onPress={handleSubmit(sendPhoneOTP)}
+          onPress={sendPhoneOTP}
           style={[ globalstyles.columnCenter,
             {
               backgroundColor: "#b35900",
@@ -233,13 +258,9 @@ const SignUpScreen = () => {
       }}>
       Use the Code sent to your phone via sms
       </Text>
-      
-      <Controller
-      control={control}
-      rules={{ required: true }}
-      render={({ field: { onChange, value } }) => (
+    
         <TaggedInput
-            onChangeText={onChange}
+            onChangeText={(val)=>handleNumeric(val,setUser(user.otp))}
             keyboardType={'numeric'}
             onBlur={()=>setFocus('')}
             onFocus={()=>setFocus('otp')}
@@ -248,17 +269,14 @@ const SignUpScreen = () => {
               padding:5,
               marginVertical:35,
               borderColor:focused == 'otp'?'orange':'#888'}}
-            value={value}
+            value={user.otp}
             errorMessage={errors.otp ? errors.otp.message : ''}
             caption='OTP Code'
             placeholder="Enter Verification code"
           />
-      )}
-      name="otp"
-      defaultValue=""
-    />
+   
       <TouchableOpacity
-          onPress={()=>handleSubmit(verifyOTP)}
+          onPress={verifyOTP}
           style={[ globalstyles.columnCenter,
             {
               backgroundColor: "#b35900",
@@ -299,28 +317,31 @@ const SignUpScreen = () => {
         position:'absolute',top:70,
         right:2,
         zIndex:1,width:130,height:100,
-        backgroundColor:'rgba(0,0,0,0.9)'}]}>
+        backgroundColor: theme.card}]}>
           {
             accountOptions.map((item,index)=>
               <Pressable 
               style={[{marginVertical:4,
-                borderWidth:1,
+                borderWidth: 1,
                 padding:2,
-                borderColor:theme.text,
+                borderColor: theme.text,
                 borderRadius:10},
-                item.value === account &&
+                item.value === user.account &&
                 {
-                  backgroundColor:theme.postBackground}
+                  backgroundColor: 'green'}
               ]}
               onPress={()=>{
                 setOpenDD(!openDD);
-                setAccount(item.value)}
+                setUser( user.account_type = item.value)}
                 } key={index}>
                 <Text 
-                style={{
+                style={[{
                   textAlign:'center',
                   fontWeight:'500',
-                  color:theme.text}}>
+                },item.value === user.account_type &&
+                {
+                  color: '#fff'}
+                ]}>
                   {item.title}
                   </Text>
               </Pressable>
@@ -367,40 +388,21 @@ const SignUpScreen = () => {
           <ChooseAccountType/>
           }
 
-
-          <Controller
-          control={control}
-          rules={{ 
-          required: 'Your name is required',
-          minLength: { value: 5, message: 'Your name must be at least 5 characters' },
-          pattern: {
-            value: /^[a-zA-Z0-9_]*$/,
-            message: 'Username can only contain letters, numbers, and underscores',
-          },
-
-          }}
-          render={({ field: { onChange, value } }) => (
           <TaggedInput
-            onChangeText={onChange}
+            onChangeText={(val)=> setUser(user.full_name = val)}
             onBlur={()=>setFocus('')}
             onFocus={()=>setFocus('name')}
             maxLength={50}
             taggedInputContainerStyles={{
               padding:5,borderColor:focused == 'name'?'orange':'#888'}}
-            value={value}
-            secureTextEntry
-            caption='Your Name'
-            placeholder="Enter Your Full Name"
-            errorMessage = { errors.name ? errors?.name?.message : ''}
+            value={user.full_name}
+            caption= {`Your ${user.account=='recruiter' ? 'Individual or Company':''} Name`}
+            placeholder="Enter Full Name"
+            errorMessage = { errors.full_name ? 'Full Name is required. Minimum of 5 characters' : ''}
           />
-        )}
-        name="name"
-        defaultValue=""
-      />
      
-
         <TouchableOpacity
-          // onPress={sendPhoneOTP(123)}
+          onPress={checkPersonalDetails}
           style={[ globalstyles.columnCenter,
             {
               backgroundColor: "#b35900",
@@ -431,54 +433,38 @@ const SignUpScreen = () => {
   function  SecurityInformation(){
     return(
       <View style={[globalstyles.column]}>
-
-            <Controller
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
               <TaggedInput
-                onChangeText={onChange}
+                onChangeText={(val)=>setUser(user.password = val)}
                 onBlur={()=>setFocus('')}
                 onFocus={()=>setFocus('pass')}
                 taggedInputContainerStyles={{
                   padding:5,
                   borderColor:focused == 'pass'?'orange':'#888'}}
-                value={value}
+                value={user.password}
                 secureTextEntry= {true}
                 caption='Password'
-                errorMessage = { errors.password ? errors?.password?.message : ''}
+                errorMessage = { errors.password ? errors?.password : ''}
                 placeholder="Enter password"
               />
-            )}
-            name="password"
-            defaultValue=""
-          />
+            
 
-          <Controller
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { onChange, value } }) => (
               <TaggedInput
-                onChangeText={onChange}
+                onChangeText={(val)=>setUser(user.repeat_password = val)}
                 onBlur={()=>setFocus('')}
                 onFocus={()=>setFocus('reppass')}
                 taggedInputContainerStyles={{
                   padding:5,
                 borderColor:focused == 'reppass'?'orange':'#888'
                 }}
-                value={value}
+                value={user.repeat_password}
                 secureTextEntry={true}
                 caption='Repeat Password'
-                errorMessage = { errors.repeatpassword  ? errors?.repeatpassword?.message : ''}
+                errorMessage = { errors.repeat_password  ? errors?.repeat_password : ''}
                 placeholder="Repeat password"
               />
-            )}
-            name="repeatpassword"
-            defaultValue=""
-          />
 
         <TouchableOpacity
-          onPress={handleSubmit(registerUser)}
+          onPress={registerUser}
           style={[ globalstyles.columnCenter,
             {
               backgroundColor: "#b35900",
@@ -500,12 +486,17 @@ const SignUpScreen = () => {
   function OrderScreens(index:number){
     if(index === 1){
       return <RegisterPhoneNumber/>
+      
+     
     }
     else if (index === 2){
       return <OTPVerification/>
+     
     }
     else if (index === 3){
-     return  <PersonalInformation/>
+    
+      return  <PersonalInformation/>
+  
     }
     else{
       return <SecurityInformation/>

@@ -5,6 +5,8 @@ import { useGetResourceMutation } from '@/store/services/authApi';
 import { setConvos } from '@/store/slices/messageSlice';
 import { useAppDispatch } from '@/store/store';
 import { globalstyles } from '@/styles/styles';
+import { dateFormater } from '@/utils/utils';
+import { router } from 'expo-router';
 import React, { useEffect, useRef } from 'react'
 import { SafeAreaView, ScrollView, View,Text, Platform } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -14,6 +16,7 @@ const ConversationsScreen = () => {
     const dispatch = useAppDispatch();
     const swipeableRowRef = useRef<any>(null)
     const { theme, isNightMode } = useSelector((state: any) => state.theme);
+    const {userData}  = useSelector((state:any)=> state.auth)
     // const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
     //   (state: any) => state.modal
     // ); 
@@ -46,6 +49,10 @@ const ConversationsScreen = () => {
 
     }
 
+    function goToScreen(screen:any){
+      router.push(screen)
+    }
+
     useEffect(()=>{
       fetchMessages()
     },[])
@@ -61,18 +68,27 @@ const ConversationsScreen = () => {
           {
             conversations ? 
 
-            conversations.map((convo:any,index:number)=>
-              <MessageParent
+            conversations.map((convo:any,index:number)=>{
+              const  {dat,time} = dateFormater(convo.timestamp)
+              const users = convo.participant
+              const participant = users.find((item:any)=>item.user_id != userData.user_id )
+
+                return(
+              <AndroidSwipeable
                key = {index}
             deleteAction ={()=>deleteConvo(convo.id)}
             archiveAction = {()=>deleteConvo(convo.id)}
             swipeableRowRef= {swipeableRowRef}
             >
                 <ConversationRow 
-            
+                  item ={convo} 
+                  handleRowPress = {()=>goToScreen({params:{chatid:convo.chatid} , screen:"[chatid]"})} 
+                  theme = {theme}
+                  participant = {participant} 
+                  time = {time} 
                 />
-            </MessageParent>
-            )
+            </AndroidSwipeable>
+            )})
           
             :
             <View style={[globalstyles.columnCenter]}>

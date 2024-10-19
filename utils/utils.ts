@@ -41,6 +41,47 @@ export function dateDifferenceWithUnit(startDate:any) {
   return `${difference} second${difference > 1 ? "s" : ""} ago`;
 }
 
+// Format date correctly for ui display
+export function dateFormater(date:any){
+  if(date){
+    try{
+      const today = new Date(date);
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      const dat = `${day}/${month}/${year}`;
+      
+      const h = today.getUTCHours();
+      const hrs = String(today.getUTCHours()+1).padStart(2, "0");
+      const mins = String(today.getUTCMinutes()).padStart(2, "0");
+
+      const am = ()=>{
+          if (h >= 0 && h <= 12){
+              return "AM"
+          }
+          else{
+              return "PM"
+          }
+      }
+      const utc = am()
+      const time = `${hrs}:${mins} ${utc}` 
+
+
+      return {dat, time};
+  }
+  catch(err){
+      const dat = "";
+      const time = ""; 
+      return {dat,time}
+  }
+  }
+  else {
+    const dat = "";
+      const time = ""; 
+      return {dat,time}
+  }
+}
+
 
 
 // async function sendEmailOTP(email:number) {

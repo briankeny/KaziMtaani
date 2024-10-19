@@ -1,10 +1,7 @@
 import { Input } from "@/components/Inputs";
 import Toast from "@/components/Toast";
 import { logo } from "@/images/images";
-import {
-  useGetResourceMutation,
-  usePostNoAuthMutation,
-} from "@/store/services/authApi";
+import {useGetResourceMutation,usePostNoAuthMutation} from "@/store/services/authApi";
 import { setTokens, setUser, setAuth } from "@/store/slices/authSlice";
 import { clearModal, rendermodal } from "@/store/slices/modalSlice";
 import { useAppDispatch } from "@/store/store";
@@ -42,12 +39,6 @@ const SigninScreen = ({navigation}:any) => {
 
   async function loginUser() {
     if (!isLogginIn) {
-      rendermodal({
-        dispatch: dispatch,
-        header: "Info",
-        status: "info",
-        content: "Login started, validating credentials ...",
-      });
       try {
         const validationData = [
           {

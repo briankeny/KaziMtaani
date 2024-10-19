@@ -34,9 +34,11 @@ export const validationBuilder =  (validationData:[...args:any])=>{
     let validatedData = {}
     validationData.map((item:any)=>{
         const obj = <dataProps> objectDestructurer(item);
-        const { minlength,type,canBeEmpty} = item;
+        const { minlength,type='string',canBeEmpty=false} = item;
         const key = obj.key;
         const value = obj.val;
+
+
         const {data,pass,errorMessage} = ruleEnforcer({ key,value,minlength,type,canBeEmpty })
  
         if (pass) {
@@ -44,7 +46,7 @@ export const validationBuilder =  (validationData:[...args:any])=>{
             validatedData = {...validatedData, ...data}
         }
         else{
-            throw new Error(errorMessage)
+            throw errorMessage
         }
     })
     return validatedData
@@ -61,7 +63,7 @@ export function objectDestructurer(item:enforcerProps){
 export function ruleEnforcer({key,value,minlength=2,type='string',canBeEmpty=false}:enforcerBuildProps){
     let data = <dataProps> {};
     let pass = false;
-    let errorMessage = '';
+    let errorMessage:any = {};
 
     if (!canBeEmpty){
         try{
@@ -69,7 +71,9 @@ export function ruleEnforcer({key,value,minlength=2,type='string',canBeEmpty=fal
             if (type != "number"){
                 const crtlen = removeSpace(value).length > minlength 
                 if(!crtlen){
-                    errorMessage =  `${formatNamecorrectly(key)} is ${value ?"too short" :"missing"}`
+                    errorMessage[key] = `${formatNamecorrectly(key)} is ${value ?
+                        "incorrect. Minimum Characters length is " + minlength 
+                        :"missing"}`
                     return {data,pass,errorMessage}
                 }
             }
@@ -90,7 +94,7 @@ export function ruleEnforcer({key,value,minlength=2,type='string',canBeEmpty=fal
                     data[key] = parseInt(value);
                 }
                 else{
-                    errorMessage =  `${key} must contain only numbers`              
+                    errorMessage[key] =  `${key} must contain only numbers`              
          
                 }
                 break
@@ -99,7 +103,7 @@ export function ruleEnforcer({key,value,minlength=2,type='string',canBeEmpty=fal
                 const valuenospace = removeSpace(value)
                     const iscrtmail =  testEmail(valuenospace)
                      if(!iscrtmail){
-                        errorMessage =  `${value} is not a correct value for ${formatNamecorrectly(key)} address`              
+                        errorMessage[key] =  `${value} is not a correct value for ${formatNamecorrectly(key)} address`              
                      }
                      else{
                         pass = true
@@ -111,7 +115,7 @@ export function ruleEnforcer({key,value,minlength=2,type='string',canBeEmpty=fal
                         const val = removeSpace(value)
                         const iscrtnum =  testPhoneNumber(val)
                          if(!iscrtnum){
-                            errorMessage =  `${value} is not a correct value for a phone number please check`              
+                            errorMessage[key] =  `${value} is not a correct value for a phone number please check`              
                          }
                          else{
                             pass = true
@@ -121,7 +125,7 @@ export function ruleEnforcer({key,value,minlength=2,type='string',canBeEmpty=fal
             case 'float':
                     const {pass:ok,errm} =  formatToFloat(value)
                     if(!ok){
-                            errorMessage =  `${value} is not a correct value for ${key} ${errm} `              
+                            errorMessage[key] =  `${value} is not a correct value for ${key} ${errm} `              
                     }
                     else{
                             pass = true
@@ -131,7 +135,7 @@ export function ruleEnforcer({key,value,minlength=2,type='string',canBeEmpty=fal
            case 'license':
                     const {correct,error} =  checkForCorrectNumberPlateFormating(value)
                     if(!correct){
-                            errorMessage =  `${value} is ${error}`              
+                            errorMessage[key] =  `${value} is ${error}`              
                     }
                     else{
                             pass = true
@@ -154,7 +158,7 @@ export function ruleEnforcer({key,value,minlength=2,type='string',canBeEmpty=fal
                         data[key] = nospace 
                     }
                     else{
-                        errorMessage =  `${formatNamecorrectly(key)} ${nospace} passed ${strengthScore}/5 checks. Required Length ${isLengthValid?"passed":"failed"}, Has Lower Case ${isLowerCaseValid}Has Upper Case ${isUpperCaseValid}, Contains a number ${isNumbersValid}, At Least One Special Character ${isSpecialCharsValid}`                
+                        errorMessage[key] =  `${formatNamecorrectly(key)} ${nospace} passed ${strengthScore}/5 checks. Required Length ${isLengthValid?"passed":"failed"}, Has Lower Case ${isLowerCaseValid}Has Upper Case ${isUpperCaseValid}, Contains a number ${isNumbersValid}, At Least One Special Character ${isSpecialCharsValid}`                
                     }
                     break
                             ;    

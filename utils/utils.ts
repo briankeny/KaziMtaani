@@ -82,76 +82,20 @@ export function dateFormater(date:any){
   }
 }
 
+export const randomKeyGenerator = () => {
+  return Math.random().toString(36).substr(2, 10);
+};
 
 
-// async function sendEmailOTP(email:number) {
-//   try{
-//     const data = [{
-//       email_adress:email,
-//       type:'email',
-//       minlength:11, 
-//       canBeEmpty:false
-//     }]
-//     const validated = validationBuilder(data)
-//     const resp = await postData({data:validated,endpoint:'/email-otp/'}).unwrap()
-//     if (resp.isSuccess){
-//       const message = resp?.data?.message
-//        //  Create a notification
-//       rendermodal({
-//         dispatch: dispatch,
-//         header: "Success",
-//         status: "success",
-//         content: message,
-//       })
-//        //  Proceed to next step
-//        setIndex(index+1)
-//     } 
-//     else{
-//       throw new Error('Server Error')
-//     }
-//   }
-//   catch(error:any){
-//     rendermodal({
-//       dispatch: dispatch,
-//       header: "Error",
-//       status: "error",
-//       content: error.message,
-//     })
-//   }
-// }
-
-// async function verifyEmailOTP(emailotp:string) {
-//   try{
-//     const data = [{
-//       email_otp:emailotp,
-//       type:'email',
-//       minlength:11, 
-//       canBeEmpty:false
-//     }]
-//     const validated = validationBuilder(data)
-//     const resp = await postData({data:validated,endpoint:'/email-otp/verif/'}).unwrap()
-//     if (resp.isSuccess){
-//       const message = resp?.data?.message
-//        //  Create a notification
-//       rendermodal({
-//         dispatch: dispatch,
-//         header: "Success",
-//         status: "success",
-//         content: message,
-//       })
-//        //  Proceed to next step
-//        setIndex(index+1)
-//     } 
-//     else{
-//       throw new Error('Server Error')
-//     }
-//   }
-//   catch(error:any){
-//     rendermodal({
-//       dispatch: dispatch,
-//       header: "Error",
-//       status: "error",
-//       content: error.message,
-//     })
-//   }
-// }
+export function generateRandomUserName(full_name:string){
+  try{
+    const rand_index = Math.random() < 0.5 ? 2 : 1
+    const name = removeSpace(full_name).slice(0,10);
+    const noun = randomKeyGenerator()
+    const u_name = `${name}${rand_index == 1 ? '_'+ noun :'_'+ noun+'_'}`
+    return u_name
+  }
+  catch(err){
+    return randomKeyGenerator()
+  }
+}

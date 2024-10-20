@@ -158,7 +158,12 @@ export function ruleEnforcer({key,value,minlength=2,type='string',canBeEmpty=fal
                         data[key] = nospace 
                     }
                     else{
-                        errorMessage[key] =  `${formatNamecorrectly(key)} ${nospace} passed ${strengthScore}/5 checks. Required Length ${isLengthValid?"passed":"failed"}, Has Lower Case ${isLowerCaseValid}Has Upper Case ${isUpperCaseValid}, Contains a number ${isNumbersValid}, At Least One Special Character ${isSpecialCharsValid}`                
+                        errorMessage[key] =  `${nospace} passed ${strengthScore}/5 checks. 
+                        Required Length ${minlength} Chars  ${isLengthValid?"passed":"failed"}, 
+                        Has Lower Case Character ex. (s) ${isLowerCaseValid}
+                        Has Upper Case Character ex. S ${isUpperCaseValid}, 
+                        Contains a number ex.(1) ${isNumbersValid}, 
+                        Has At Least One Special Character ex(@,#,$,&) ${isSpecialCharsValid}`                
                     }
                     break
                             ;    

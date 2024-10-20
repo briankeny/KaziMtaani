@@ -10,11 +10,9 @@ const HomeScreen = () => {
   const { theme, isNightMode } = useSelector((state: any) => state.theme);
   const { userData } = useSelector((state: any) => state.auth);
 
-
-    function goToScreen(screen:any){
+  function goToScreen(screen:any){
       router.replace(screen)
-    }
-
+  }
 
   const Menu = ({
     Icon,
@@ -60,18 +58,23 @@ const HomeScreen = () => {
 
   return (
     <SafeAreaView
-      style={[globalstyles.safeArea, { backgroundColor: theme.background }]}
+      style={[globalstyles.safeArea, { backgroundColor: theme.background}]}
     >
+          <Text style={[{
+            color:'rgb(0, 99, 1)',
+            padding:20
+            ,fontSize:23,
+            fontWeight:'600'
+            
+          }]}>
+              Find Job Seekers Here
+            </Text>
 
       <View style={[globalstyles.card,{elevation:2,backgroundColor:'rgb(0, 102, 51)',width:'80%'}]}>
 
-            <Text style={[{color:theme.text}]}>
-              Hi Brian
-            </Text>
-
           <View style={[globalstyles.row,{alignSelf:'center',padding:10,gap:10}]}>
             <Text style={[{color:'#fff',fontSize:30,fontWeight:'600'}]}>300</Text>
-            <Text style={[{color:'#fff',paddingTop:8}]}>Job posts</Text>
+            <Text style={[{color:'#fff',paddingTop:10}]}>posts</Text>
           </View>
 
         <View style={[globalstyles.rowEven]}>
@@ -95,9 +98,11 @@ const HomeScreen = () => {
 
        <Menu
               header="Profile visits"
-              backColor='rgb(177, 137, 2)'
+              headerTextColor={theme.text}
+              contentTextColor={theme.text}
+              backColor={theme.card}
               content="360"
-              iconColor="#fff"
+              iconColor="rgb(177, 137, 2)"
               iconSize={21}
               iconName="users"
               Icon={FontAwesome}
@@ -106,23 +111,25 @@ const HomeScreen = () => {
 
             <Menu
               header="Impressions"
-              backColor='rgb(255, 255, 255)'
-              headerTextColor={'#444'}
-              contentTextColor={'#222'}
+              headerTextColor={theme.text}
+              contentTextColor={theme.text}
+              backColor={theme.card}
               content="4000"
               iconColor={'red'}
               iconSize={28}
-              iconName="users"
-              Icon={FontAwesome}
+              iconName="bar-chart"
+              Icon={MaterialIcons}
               onPress={() => goToScreen("Transport")}
             />
 
 
             <Menu
-              header="Search Appearance"
-              backColor='rgb(106, 90, 205)'
+              header="Search Appearances"
+              headerTextColor={theme.text}
+              contentTextColor={theme.text}
+              backColor={theme.card}
               content="40"
-              iconColor="#fff"
+              iconColor="rgb(106, 90, 205)"
               iconSize={21}
               iconName="search"
               Icon={MaterialIcons}
@@ -130,15 +137,18 @@ const HomeScreen = () => {
             />
 
             <Menu
-              header="Reviews"
-              backColor='rgb(198, 131, 2)'
+              header="Job posts Reviews"
               content="4"
-              iconColor="#fff"
+              headerTextColor={theme.text}
+              contentTextColor={theme.text}
+              backColor={theme.card}
+              iconColor="orange"
               iconSize={28}
-              iconName="emoji-transportation"
+              iconName="reviews"
               Icon={MaterialIcons}
               onPress={() => goToScreen("Transport")}
             />
+
           </View>
 
 

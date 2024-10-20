@@ -5,6 +5,7 @@ import { Stack } from "expo-router";
 import { useState, useEffect } from "react";
 import { Provider } from "react-redux";
 import * as Font from 'expo-font'; // import expo-font for loading fonts
+import { SignupHeader } from "@/components/Headers";
 
 export default function RootLayout() {
   const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
@@ -31,10 +32,17 @@ export default function RootLayout() {
         dark: false,
         colors: colorslight
       }}>
-        <Stack screenOptions={{headerShown:false}}>
-          <Stack.Screen name="signup" />
+        <Stack screenOptions={{headerShown:true,
+          header:()=> <SignupHeader/>
+        }}>
+          <Stack.Screen options={{headerShown:false}} name="signin" />
+          <Stack.Screen name="signup-phone-auth" />
+          <Stack.Screen name="signup-otp-verify" />
+          <Stack.Screen name="signup-account-setup" />
         </Stack>
       </ThemeProvider>
     </Provider>
   );
 }
+
+

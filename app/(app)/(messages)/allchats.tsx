@@ -28,7 +28,6 @@ const ConversationsScreen = () => {
          await getUserData({endpoint:'/conversations/'})
       }
       catch(error:any){
-        console.log(error.message)
       }
     }
 

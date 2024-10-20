@@ -60,8 +60,9 @@ const Toast: React.FC<ToastProps> = ({
             marginTop:5,
             top:0,
             zIndex:1,
-            backgroundColor:'rgba(0,0,0,0.1)',
+            backgroundColor:isNightMode ? 'rgb(205,200,200)' : '#fff',
             left:0,
+            elevation:3,
             width:'99%',
             alignSelf:'center'
           }

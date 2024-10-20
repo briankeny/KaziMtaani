@@ -148,7 +148,7 @@ interface InputProps{
 }
 
 
-export function Input({theme,setFocus,current,value,secureEntry=false,placeholder='',focusColor="orange",inputStyles,
+export function Input({theme,setFocus,current,value,secureEntry=false,placeholder='',focusColor="#b35900",inputStyles,
   showVisibility,errorMessage,keyboardType='default',
   showVisButton=false,maxLength=18,
   focus,Icon,icon_name,onChangeText}:InputProps){

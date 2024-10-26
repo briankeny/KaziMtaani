@@ -1,16 +1,16 @@
-import { Input } from "@/components/Inputs";
-import Toast from "@/components/Toast";
-import { logo } from "@/images/images";
-import {useGetResourceMutation,usePostNoAuthMutation} from "@/store/services/authApi";
-import { setTokens, setUser, setAuth } from "@/store/slices/authSlice";
-import { clearModal, rendermodal } from "@/store/slices/modalSlice";
-import { useAppDispatch } from "@/store/store";
-import { globalstyles } from "@/styles/styles";
-import { checkStrForPurelyNumbers, validationBuilder } from "@/utils/validator";
+import React, { useEffect, useState } from "react";
+import { Input } from "@/kazisrc/components/Inputs";
+import Toast from "@/kazisrc/components/Toast";
+import { logo } from "@/kazisrc/images/images";
+import { useGetResourceMutation, usePostNoAuthMutation } from "@/kazisrc/store/services/authApi";
+import { setTokens, setUser, setAuth } from "@/kazisrc/store/slices/authSlice";
+import { clearModal, rendermodal } from "@/kazisrc/store/slices/modalSlice";
+import { useAppDispatch } from "@/kazisrc/store/store";
+import { globalstyles } from "@/kazisrc/styles/styles";
+import { validationBuilder, checkStrForPurelyNumbers } from "@/kazisrc/utils/validator";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { SafeAreaView, View, TouchableOpacity,Text,Image, Pressable, TextInput } from "react-native";
+import { SafeAreaView, View, TextInput,Text,Image, TouchableOpacity, Pressable } from "react-native";
 import { useSelector } from "react-redux";
 
 const SigninScreen = ({navigation}:any) => {
@@ -19,6 +19,7 @@ const SigninScreen = ({navigation}:any) => {
   const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
     (state: any) => state.modal
   );
+  const {authentication} = useSelector((state:any)=>state.auth)
   const [getUserData, { isLoading, isError, error, isSuccess }] = useGetResourceMutation();
   const [handleLogin,{ isLoading: isLogginIn, isError: existsLoginError, error: passError }] = usePostNoAuthMutation();
   const [showPass, setShowPass] = useState(true);
@@ -48,7 +49,7 @@ const SigninScreen = ({navigation}:any) => {
         
         }]
         const validated = validationBuilder(validationData)
-     
+        console.log(validated)
         if (validated) {
           const response = await handleLogin({
             data: validated,
@@ -65,14 +66,14 @@ const SigninScreen = ({navigation}:any) => {
             await dispatch(setTokens(response));
             const user = await getUserData({ endpoint: "/profile/" }).unwrap();
             if (user){
-              closeModal() 
-              await dispatch(setUser(user[0])) 
+              closeModal()
+              await dispatch(setUser(user)) 
               await dispatch(setAuth(true));
-            
             }
           }
       }
       } catch (error: any) {
+        console.log(error)
        setErrors(error)
       }
     }
@@ -87,6 +88,11 @@ const SigninScreen = ({navigation}:any) => {
   function goToScreen(screen:any){
     router.push(screen)
   }
+ 
+  useEffect(()=>{
+    if (authentication ) router.replace('/(app)')  
+   },[authentication])
+ 
 
   useEffect(()=>{
     existsLoginError &&
@@ -208,7 +214,7 @@ const SigninScreen = ({navigation}:any) => {
         </TouchableOpacity>
 
         <Pressable
-          onPress={()=>goToScreen('Reset Password')}
+          onPress={()=>goToScreen({pathname:'password-reset'})}
           style={[{marginVertical:8}]}
         >
           <Text style={[{color:'green',textAlign:'center'}]}>Forgot Password?</Text>

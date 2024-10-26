@@ -1,24 +1,94 @@
-import { TabBarIcon } from "@/components/navigation/TabBarIcon";
-import { Tabs } from "expo-router";
+import React, { useEffect } from "react";
+import { HomeHeader } from "../../components/Headers";
+import { TabBarIcon } from "../../components/navigation/TabBarIcon";
+import { FontAwesome } from "@expo/vector-icons";
+import { Redirect, router, Tabs } from "expo-router";
+import { useSelector } from "react-redux";
 
 export default function TabLayout() {
+  const { authentication } = useSelector((state: any) => state.auth);
+  const { theme } = useSelector((state: any) => state.theme);
 
-    return (
+  if(!authentication)
+    {
+    return <Redirect href="/signin"/>
+    }
+  
+  return (
       <Tabs
         screenOptions={{
           // tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-          headerShown: false,
-        }}>
+          headerShown: true,
+
+          tabBarStyle: {
+            backgroundColor: theme.card, // Tab bar background
+            borderTopColor: "transparent", // Remove top border
+            height: 60, // Height of tab bar
+          },
+          tabBarActiveTintColor: "orange", // Active tab icon color
+          tabBarInactiveTintColor: theme.text, // Inactive tab icon color
+          tabBarLabelStyle: {
+            color: theme.text,
+            fontSize: 12, // Font size of tab label
+            paddingBottom: 5, // Space between label and bottom of tab bar
+          },
+        }}
+      >
         <Tabs.Screen
           name="(home)"
           options={{
-            title: 'Home',
+            title: "Home",
+            header: () => <HomeHeader />,
             tabBarIcon: ({ color, focused }) => (
-              <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+              <TabBarIcon
+                name={focused ? "home" : "home-outline"}
+                color={focused ? "orange" : theme.text}
+              />
             ),
           }}
         />
-    
+
+        <Tabs.Screen
+          name="(search)"
+          options={{
+            title: "Search",
+            header: () => <HomeHeader />,
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon
+                name={focused ? "search-sharp" : "search-outline"}
+                color={focused ? "orange" : theme.text}
+              />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="(messages)"
+          options={{
+            title: "Messages",
+
+            tabBarIcon: ({ color, focused }) => (
+              <TabBarIcon
+                name={focused ? "mail" : "mail-outline"}
+                color={focused ? "orange" : theme.text}
+              />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="(profile)"
+          options={{
+            title: "Profile",
+            tabBarIcon: ({ color, focused }) => (
+              <FontAwesome
+                name={focused ? "user" : "user-o"}
+                size={24}
+                color={focused ? "orange" : theme.text}
+              />
+            ),
+          }}
+        />
       </Tabs>
-    );
-  }
+  );
+}

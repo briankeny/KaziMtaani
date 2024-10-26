@@ -1,13 +1,13 @@
-import React, { useEffect } from "react";
-import { clearModal, rendermodal } from "@/store/slices/modalSlice";
-import { useAppDispatch, useSelector } from "@/store/store";
-import { checkStrForPurelyNumbers, validationBuilder } from "@/utils/validator";
-import { useState } from "react";
-import { usePostNoAuthMutation } from "@/store/services/authApi";
+import Toast from "@/kazisrc/components/Toast";
+import { usePostNoAuthMutation } from "@/kazisrc/store/services/authApi";
+import { clearModal, rendermodal } from "@/kazisrc/store/slices/modalSlice";
+import { useAppDispatch } from "@/kazisrc/store/store";
+import { globalstyles } from "@/kazisrc/styles/styles";
+import { validationBuilder, checkStrForPurelyNumbers } from "@/kazisrc/utils/validator";
 import { router } from "expo-router";
-import { globalstyles } from "@/styles/styles";
-import { View, TextInput,Text, TouchableOpacity, SafeAreaView } from "react-native";
-import Toast from "@/components/Toast";
+import React, { useEffect, useState } from "react";
+import { SafeAreaView, View, TouchableOpacity,Text,TextInput } from "react-native";
+import { useSelector } from "react-redux";
 
 export default function NumberVerification() {
     const {theme, isNightMode} = useSelector((state:any)=>state.theme)

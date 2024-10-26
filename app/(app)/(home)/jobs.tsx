@@ -1,13 +1,12 @@
-import { logo } from '@/images/images'
-import { useGetResourceMutation } from '@/store/services/authApi'
-import { useAppDispatch } from '@/store/store'
-import { globalstyles } from '@/styles/styles'
-import { dateDifferenceWithUnit } from '@/utils/utils'
-import React, { useRef } from 'react'
-import { SafeAreaView, View,Text, Pressable,Image, FlatList, TouchableOpacity } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useGetResourceMutation } from '@/kazisrc/store/services/authApi';
+import { useAppDispatch } from '@/kazisrc/store/store';
+import { globalstyles } from '@/kazisrc/styles/styles';
+import { dateDifferenceWithUnit } from '@/kazisrc/utils/utils';
+import React, { useEffect, useRef, useState } from 'react';
+import { SafeAreaView, View,Text, TouchableOpacity,Image,FlatList} from 'react-native'
+import { useSelector } from 'react-redux';
 
-const JobAdsScreen = () => {
+export default function JobPostsScreen () {
   const dispatch = useAppDispatch();
   const swipeableRowRef = useRef<any>(null)
   const { theme, isNightMode } = useSelector((state: any) => state.theme);
@@ -24,6 +23,7 @@ const JobAdsScreen = () => {
     catch(error:any){
     }
   }
+  
   return (
     <SafeAreaView
       style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
@@ -45,7 +45,6 @@ const JobAdsScreen = () => {
   )
 }
 
-export default JobAdsScreen
 
 
 export function JobCard({item,theme}:any){
@@ -57,7 +56,7 @@ export function JobCard({item,theme}:any){
         <View style={[globalstyles.rowWide]}>
         
           <View style={[globalstyles.row,{gap:10}]}>
-              <Image source={logo} 
+              <Image source={{uri:"https://x.com/briankeny"}} 
               style={{width:50,height:50,borderRadius:25}}
               />
               <View>

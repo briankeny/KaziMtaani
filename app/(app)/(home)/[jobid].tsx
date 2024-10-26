@@ -1,11 +1,10 @@
-import { useGetResourceMutation, usePostResourceMutation } from '@/store/services/authApi';
-import { useAppDispatch } from '@/store/store';
-import { globalstyles } from '@/styles/styles';
+import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react'
 import { SafeAreaView, View,Text, TouchableOpacity} from 'react-native'
+import { useGetResourceMutation, usePostResourceMutation } from '@/kazisrc/store/services/authApi';
+import { useAppDispatch } from '@/kazisrc/store/store';
+import { globalstyles } from '@/kazisrc/styles/styles';
 import { useSelector } from 'react-redux';
-
 
 export default function JobProfile() {
   const {jobid} = useLocalSearchParams()
@@ -21,7 +20,7 @@ export default function JobProfile() {
 
   async function fetchJobData() {
     try{
-       await getUserData({endpoint:`/jobadverts/${jobid}/`})
+       await getUserData({endpoint:`/jobposts/${jobid}/`})
     }
     catch(error:any){
 
@@ -31,7 +30,7 @@ export default function JobProfile() {
   async function applyJobAdv() {
     try{
       const data = {user_id:1,job_id:jobad.advert_id}
-      const resp = await postData({data:data,endpoint:`/jobs/`})
+      const resp = await postData({data:data,endpoint:`/jobapplications/`})
       if(resp){
 
       }

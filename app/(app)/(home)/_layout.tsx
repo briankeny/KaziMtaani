@@ -1,13 +1,17 @@
 import { Stack } from 'expo-router'
 import React from 'react'
 
-const JobStacklayout = () => {
+const HomeStacklayout = () => {
   return (
-   <Stack>
+   <Stack screenOptions={{
+    headerShown:false
+   }}>
+        <Stack.Screen name='index'/>
+        <Stack.Screen name='notifications'/>
         <Stack.Screen name='jobs'/>
         <Stack.Screen name='[jobid]'/>
    </Stack>
   )
 }
 
-export default JobStacklayout
+export default HomeStacklayout

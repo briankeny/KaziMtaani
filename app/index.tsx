@@ -1,12 +1,10 @@
+import { Redirect } from 'expo-router'
 import React from 'react'
-import { View ,Text} from 'react-native'
+import { useSelector } from 'react-redux'
 
-const index = () => {
-  return (
-    <View>
-        <Text style={{color:'red'}}>Mutusey </Text>
-    </View>
-  )
+const Index = () => {
+  const {authentication} = useSelector((state:any)=>state.auth)
+  return authentication? <Redirect href="/(app)"/> :  <Redirect href="/signin"/> 
 }
 
-export default index
+export default Index

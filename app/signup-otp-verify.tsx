@@ -1,13 +1,13 @@
-import { TaggedInput } from '@/components/Inputs';
-import Toast from '@/components/Toast';
-import { usePostNoAuthMutation } from '@/store/services/authApi';
-import { clearModal, rendermodal } from '@/store/slices/modalSlice';
-import { useAppDispatch } from '@/store/store';
-import { globalstyles } from '@/styles/styles';
-import { checkStrForPurelyNumbers, validationBuilder } from '@/utils/validator';
-import { router, useLocalSearchParams } from 'expo-router';
+import { TaggedInput } from '@/kazisrc/components/Inputs';
+import Toast from '@/kazisrc/components/Toast';
+import { usePostNoAuthMutation } from '@/kazisrc/store/services/authApi';
+import { rendermodal, clearModal } from '@/kazisrc/store/slices/modalSlice';
+import { useAppDispatch } from '@/kazisrc/store/store';
+import { globalstyles } from '@/kazisrc/styles/styles';
+import { validationBuilder, checkStrForPurelyNumbers } from '@/kazisrc/utils/validator';
+import { useLocalSearchParams, router } from 'expo-router';
 import React, { useEffect, useState } from 'react'
-import { View, TouchableOpacity, Pressable,Text, SafeAreaView } from 'react-native';
+import { SafeAreaView, View, TouchableOpacity,Text, Pressable } from "react-native";
 import { useSelector } from 'react-redux';
 
 
@@ -98,7 +98,7 @@ function OtpVerifyScreen() {
     </Text>
   
       <TaggedInput
-          onChangeText={(val)=>handleNumeric(val,setOtp)}
+          onChangeText={(val:any)=>handleNumeric(val,setOtp)}
           keyboardType={'numeric'}
           onBlur={()=>setFocus('')}
           onFocus={()=>setFocus('otp')}

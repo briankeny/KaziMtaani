@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet,SafeAreaView,TouchableOpacity, Pressable, ScrollView } from 'react-native';
-import { TaggedInput } from '@/components/Inputs';
-import { useAppDispatch } from '@/store/store';
-import { useSelector } from 'react-redux';
-import { globalstyles } from '@/styles/styles';
+import { TaggedInput } from '@/kazisrc/components/Inputs';
+import Toast from '@/kazisrc/components/Toast';
+import { usePostNoAuthMutation } from '@/kazisrc/store/services/authApi';
+import { clearModal, rendermodal } from '@/kazisrc/store/slices/modalSlice';
+import { useAppDispatch } from '@/kazisrc/store/store';
+import { globalstyles } from '@/kazisrc/styles/styles';
+import { generateRandomUserName } from '@/kazisrc/utils/utils';
+import { validationBuilder } from '@/kazisrc/utils/validator';
 import { AntDesign } from '@expo/vector-icons';
-import { usePostNoAuthMutation } from '@/store/services/authApi';
-import {  validationBuilder } from '@/utils/validator';
-import { clearModal, rendermodal } from '@/store/slices/modalSlice';
-import { router, useLocalSearchParams } from 'expo-router';
-import Toast from '@/components/Toast';
-import { generateRandomUserName } from '@/utils/utils';
+import { useLocalSearchParams, router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, View, TouchableOpacity,Text, Pressable, ScrollView } from "react-native";
+import { useSelector } from 'react-redux';
 
 const SignUpScreen = () => {
   const dispatch = useAppDispatch()
@@ -210,7 +210,7 @@ const SignUpScreen = () => {
          }
 
          <TaggedInput
-           onChangeText={(val)=> setFullName(val)}
+           onChangeText={(val:any)=> setFullName(val)}
            onBlur={()=>setFocus('')}
            onFocus={()=>setFocus('name')}
            maxLength={50}
@@ -235,7 +235,7 @@ const SignUpScreen = () => {
          </View>
      
               <TaggedInput
-                onChangeText={(val)=>setPassword(val)}
+                onChangeText={(val:any)=>setPassword(val)}
                 onBlur={()=>setFocus('')}
                 onFocus={()=>setFocus('pass')}
                 taggedInputContainerStyles={{
@@ -250,7 +250,7 @@ const SignUpScreen = () => {
             
 
               <TaggedInput
-                onChangeText={(val)=>setRepeatPassword(val)}
+                onChangeText={(val:any)=>setRepeatPassword(val)}
                 onBlur={()=>setFocus('')}
                 onFocus={()=>setFocus('reppass')}
                 taggedInputContainerStyles={{
@@ -293,9 +293,5 @@ const SignUpScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { padding: 20 },
-  input: { borderWidth: 1, padding: 10, marginBottom: 10 }
-});
 
 export default SignUpScreen;

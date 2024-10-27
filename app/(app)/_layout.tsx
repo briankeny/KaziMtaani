@@ -1,9 +1,8 @@
 import React, { useEffect } from "react";
-import { HomeHeader } from "../../components/Headers";
-import { TabBarIcon } from "../../components/navigation/TabBarIcon";
 import { FontAwesome } from "@expo/vector-icons";
 import { Redirect, router, Tabs } from "expo-router";
 import { useSelector } from "react-redux";
+import { TabBarIcon } from "@/kazisrc/components/navigation/TabBarIcon";
 
 export default function TabLayout() {
   const { authentication } = useSelector((state: any) => state.auth);
@@ -18,8 +17,7 @@ export default function TabLayout() {
       <Tabs
         screenOptions={{
           // tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-          headerShown: true,
-
+          headerShown: false,
           tabBarStyle: {
             backgroundColor: theme.card, // Tab bar background
             borderTopColor: "transparent", // Remove top border
@@ -38,7 +36,6 @@ export default function TabLayout() {
           name="(home)"
           options={{
             title: "Home",
-            header: () => <HomeHeader />,
             tabBarIcon: ({ color, focused }) => (
               <TabBarIcon
                 name={focused ? "home" : "home-outline"}
@@ -52,7 +49,6 @@ export default function TabLayout() {
           name="(search)"
           options={{
             title: "Search",
-            header: () => <HomeHeader />,
             tabBarIcon: ({ color, focused }) => (
               <TabBarIcon
                 name={focused ? "search-sharp" : "search-outline"}

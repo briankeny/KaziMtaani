@@ -11,7 +11,7 @@ export type Theme = {
 
 export  interface HomeMenuProps {
     Icon: any; // Update with the appropriate type for your icons
-    onPress: () => void;
+    onPress?: () => void;
     backColor?:string;
     contentTextColor?:string | any;
     headerTextColor?:string | any;

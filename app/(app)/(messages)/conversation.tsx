@@ -1,11 +1,12 @@
+import { MessageInput } from '@/kazisrc/components/Inputs';
 import { useGetResourceMutation, usePostFormDataMutation } from '@/kazisrc/store/services/authApi';
 import { setMessages } from '@/kazisrc/store/slices/messageSlice';
 import { useAppDispatch } from '@/kazisrc/store/store';
 import { globalstyles } from '@/kazisrc/styles/styles';
-import { pickImage, randomKeyGenerator } from '@/kazisrc/utils/utils';
+import { dateFormater, pickImage, randomKeyGenerator, removeSpace } from '@/kazisrc/utils/utils';
 import { validationBuilder } from '@/kazisrc/utils/validator';
 import React, { useEffect, useState } from 'react'
-import { SafeAreaView, ScrollView, TouchableOpacity,Text } from 'react-native'
+import { SafeAreaView, ScrollView, TouchableOpacity,Text, Image, View } from 'react-native'
 import { useSelector } from 'react-redux';
 
 
@@ -19,8 +20,9 @@ export function ChatScreen () {
   const [postData ,{isLoading,isSuccess,error,isError}] = usePostFormDataMutation();
 
   const [content, setContent] = useState<string|any>('')
-  const [receiver , setReceiver] = useState<number|any>(null)
+  const [receiver , setReceiver] = useState<number|any>(null) 
   const [errors,setError] = useState<any>({})
+  const  [focused, setFocus] = useState<string>('')
  
   const [image,setImage] = useState<string | null>(null)
   const [imageSelected, setImageSelected] =useState<boolean>(false)
@@ -67,18 +69,20 @@ export function ChatScreen () {
         if (imageSelected){
           const img = {
             uri: image,
-            name: `${userData.first_name}${userData.last_name}${randomKeyGenerator()}.${imageType}`,
+            name: `${removeSpace(userData.full_name)}${randomKeyGenerator()}.${imageType}`,
             type: `image/${imageType}`
            }
           images.push(img)
         }
-  
         const resp = await postData({data:validated,endpoint:'/messages/'}).unwrap()
         if(resp){
-          setMessages([...messages,])
+          const uploaded = resp?.data ? resp.data : validated 
+          const latest = [...messages,resp.data]
+          dispatch(setMessages([...messages,validated]))
         }
       }
       catch(err:any){
+
         setError(err)
       }
     }
@@ -113,7 +117,7 @@ export function ChatScreen () {
       const resp:any = await getData({endpoint:`/chat/${chat_id}/messages/`})
       if(resp) {
         const arr =  [...messages, ...resp.results];
-        setMessages( [...new Set(arr)])
+        dispatch(setMessages( [...new Set(arr)]))
       }
     }
     catch(error:any){
@@ -132,7 +136,7 @@ export function ChatScreen () {
     findReceiver()
   },[])
 
-  function MessageComponent(message:any){
+  function MessageComponent({message ,time}:{message:any,time:string}){
     return(
       <TouchableOpacity
       style={
@@ -141,15 +145,44 @@ export function ChatScreen () {
         backgroundColor: theme.card,
         elevation:2,
         width:'45%',
-        padding:23,
+        padding:10,
         margin:1,
         borderRadius:10
       }]}
       >
-          <Text
-          style={{color:theme.text}}
+        {message.image &&
+        <TouchableOpacity
+        style={{
+          width:'100%',
+          height:'100%'
+        }}
+        >
+          <Image
+          style={{
+            width:'100%',
+            aspectRatio:2/3
+          }}
+          source={{uri:message.image}}
+          />
+        </TouchableOpacity>
+        }
+
+        <View style={{padding:5}}>
+            <Text
+              style={{color:theme.text}}
+              >
+              {message.content} </Text>
+        </View>
+        
+
+           <Text
+          style={{
+            fontFamily:'Poppins-Regular',
+            color:theme.text,
+            alignSelf:'flex-end'}}
           >
-           {message.content} </Text>
+           {time} </Text>
+
       </TouchableOpacity>
     )
   }
@@ -159,29 +192,44 @@ export function ChatScreen () {
     <SafeAreaView
     style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
         <ScrollView>
-
-          {messages.map((item:any,index:number)=>
-
-            <TouchableOpacity
-            key={index}
-            style={
-              [ item.from === 'Brian'&&{alignSelf:'flex-end'},
-              {
-              backgroundColor: 'red',
-              width:'45%',
-              padding:23,
-              margin:1,
-              borderRadius:10
-            }]}
-            >
-                <Text
-                style={{color:theme.text}}
-                >
-                  Hello Iam sender</Text>
-            </TouchableOpacity>
-        )
           
+          {
+            messages.length > 0 ? 
+            messages.map((item:any,index:number)=>{
+              const {dat, time} = dateFormater(item.timestamp)
+              return(
+                <MessageComponent
+                key={index}
+                message={item}
+                time=''
+                />
+              )
+            }
+            )
+            :
+            <View style={[globalstyles.columnCenter,{height:'100%'}]}>
+              <Text style={{color:theme.text}}>
+                0 messages found
+              </Text>
+            </View>
           }
+          
+          
+          <MessageInput
+            onFocus ={()=>setFocus('msg')}
+            onBlur={()=>setFocus('')} 
+            InputViewStyles={{borderColor: focused == 'msg'? 'green' : theme.color
+            }}
+            onChangeText = {(val)=>setContent(val)} 
+            onSubmit = {sendMessage} 
+            onAttachImage = {openImagePicker} 
+            value={content}
+            placeholder ={'Type something ...'}
+            editable = {true} 
+            placeholderTextColor = '#999'
+            maxLength={200} 
+            theme={theme}
+          />
         </ScrollView>
       </SafeAreaView>
   )

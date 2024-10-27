@@ -1,10 +1,11 @@
 import React from "react";
-import { useGetResourceMutation } from "../../../store/services/authApi";
-import { useAppDispatch } from "../../../store/store";
-import { globalstyles } from "../../../styles/styles";
+
 import { useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native";
 import { useSelector } from "react-redux";
+import { useGetResourceMutation } from "@/kazisrc/store/services/authApi";
+import { useAppDispatch } from "@/kazisrc/store/store";
+import { globalstyles } from "@/kazisrc/styles/styles";
 
 const  UserScreen = () => {
     const {userid} = useLocalSearchParams()

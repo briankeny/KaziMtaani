@@ -15,12 +15,12 @@ export default function RootLayout() {
   const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
   const loadFonts = async () => {
     await Font.loadAsync({
-      'Poppins-Bold': require('../../assets/fonts/Poppins-Bold.ttf'),
-      'Poppins-ExtraBold': require('../../assets/fonts/Poppins-ExtraBold.ttf'),
-      'Poppins-Italic': require('../../assets/fonts/Poppins-Italic.ttf'),
-      'Poppins-Medium': require('../../assets/fonts/Poppins-Medium.ttf'),
-      'Poppins-Regular': require('../../assets/fonts/Poppins-Regular.ttf'),
-      'Poppins-Thin': require('../../assets/fonts/Poppins-Thin.ttf'),
+      'Poppins-Bold': require('../assets/fonts/Poppins-Bold.ttf'),
+      'Poppins-ExtraBold': require('../assets/fonts/Poppins-ExtraBold.ttf'),
+      'Poppins-Italic': require('../assets/fonts/Poppins-Italic.ttf'),
+      'Poppins-Medium': require('../assets/fonts/Poppins-Medium.ttf'),
+      'Poppins-Regular': require('../assets/fonts/Poppins-Regular.ttf'),
+      'Poppins-Thin': require('../assets/fonts/Poppins-Thin.ttf'),
       // path to your font file
     });
     setFontsLoaded(true);

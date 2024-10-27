@@ -9,10 +9,10 @@ import {
   SafeAreaView,
   View,
   Text,
-  Pressable,
   Image,
   FlatList,
   TouchableOpacity,
+  Pressable,
 } from "react-native";
 import { useSelector } from "react-redux";
 
@@ -82,16 +82,14 @@ export function JobCard({ item, theme }: any) {
             source={logo}
             style={{ width: 50, height: 50, borderRadius: 25 }}
           />
+
           <View>
-            <Text
-              style={{
-                fontWeight: "500",
-                paddingVertical: 2,
-                color: theme.text,
-              }}
-            >
-              {item?.recruiter?.full_name}
-            </Text>
+          <Text 
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          style={[{ color: theme.text, fontFamily:'Poppins-Bold' }]}>
+          {item.title}
+          </Text>
             <Text style={{ color: "#888", fontSize: 10 }}>
               {item?.recruiter?.username}
             </Text>
@@ -103,45 +101,39 @@ export function JobCard({ item, theme }: any) {
         </View>
       </View>
 
-      <View style={[{ marginVertical: 2, padding: 10 }]}>
-        <Text style={[{ color: theme.text, fontWeight: "500" }]}>
-          {item.title}
-        </Text>
-        <Text
-          numberOfLines={1}
-          style={[{ color: theme.text }]}
-          ellipsizeMode="tail"
-        >
-          {item.description}
-        </Text>
+      <View style={[globalstyles.rowWide]}>
+
+        <View style={[globalstyles.column ,{width:'48%'}]}>
+          <Text style={[{ color: theme.text,fontSize:11}]}>
+            Sallary
+          </Text>
+          <Text
+            numberOfLines={1}
+            style={[{ color: 'green' ,fontFamily:'Poppins'}]}
+            ellipsizeMode="tail"
+          >
+            {item.salary_range}
+          </Text>
+        </View>
+        
+        <View style={[globalstyles.column,{width:'48%'}]}>
+            <Text style={{color:theme.text,fontSize:11}}>Status</Text>
+            <Text
+            style={{
+              color: item.status == 'open'? 'orange' : 'red',
+              fontFamily:'Poppins-Bold'
+            }}
+            >{item.status}</Text>
+        </View>
       </View>
 
       <View style={[globalstyles.rowWide]}>
-        <Text style={[{ color: theme.text, fontSize: 11 }]}>2 applicants</Text>
-        <TouchableOpacity
-          style={[
-            {
-              alignSelf: "center",
-              borderWidth: 1,
-              borderRadius: 20,
-              borderColor: "#888",
-            },
-          ]}
-        >
-          <Text
-            style={[
-              {
-                textAlign: "center",
-                color: theme.text,
-                fontWeight: "500",
-                paddingHorizontal: 10,
-                paddingVertical: 5,
-              },
-            ]}
-          >
-            Read More
-          </Text>
-        </TouchableOpacity>
+        <Text style={[{ color: theme.text, fontSize: 11,textTransform:'capitalize' }]}>
+          {item.employment_type}</Text>
+    
+        <Pressable style={{borderColor:theme.text,borderWidth:1,borderRadius:20}}>
+            <Text style={{color:theme.text,padding:10}}>More Details</Text>
+        </Pressable>
 
         <Text style={[{ color: theme.text, fontSize: 11 }]}>{time}</Text>
       </View>

@@ -1,11 +1,12 @@
 import React from "react";
 import { logo } from "../images/images";
 import { globalstyles } from "../styles/styles";
-import { AntDesign, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
-import { SafeAreaView, View, Image, Text, TouchableOpacity, StatusBar } from "react-native";
+import { SafeAreaView, View, Image, Text, TouchableOpacity, StatusBar, TextInput } from "react-native";
 import { useSelector } from "react-redux";
+import { useGetResourceMutation } from "../store/services/authApi";
 
 export function SignupHeader() {
   const steps = [
@@ -78,6 +79,7 @@ export function HomeHeader(){
         borderBottomColor:'#888'
         }]}>
         <View style={[globalstyles.rowWide]}>
+     
         <View style={{
           height:60,
           width:60,
@@ -125,3 +127,60 @@ export function CustomUserAvatar({name}:{name:string}){
     </View>
   )
 }
+
+
+export function SearchHeader({cacheKey,searchEndpoint,searchQuery,setSearchQuery}:any){
+  const {theme} = useSelector((state:any)=>state.theme)
+  const [focused, setFocus] = useState<string>('')
+ 
+  const [getData, {isLoading}] = useGetResourceMutation({fixedCacheKey:cacheKey});
+ 
+
+  async function searchFunction(){
+   if(!isLoading){
+    try {
+      await getData({endpoint:searchEndpoint})
+    }
+    catch(err:any){
+
+    }
+  }
+  }
+
+  return(
+    <View style={[globalstyles.row,{
+      width: "80%",
+      height: 40,
+      backgroundColor:'rgba(255,255,255,0.1)',
+      borderRadius: 30,
+      paddingHorizontal: 20
+    }]}>
+      <TextInput
+      style={[{
+        width:'80%',
+        paddingLeft:20,
+        height:33,
+      },
+      focused == 'srch' &&{borderWidth:0.1, borderBottomColor:'green'}
+    ]}
+      value={searchQuery}
+      onFocus={()=>setFocus('srch')}
+      onBlur={()=>setFocus('')}
+      placeholder={'Search here...'}
+      placeholderTextColor={'#888'}
+      onChangeText={(val)=>setSearchQuery(val)}
+    />
+   
+    <TouchableOpacity
+          onPress={searchFunction}
+          style={[{ width: 30, height: 40,padding:5}]}
+        >
+          <Ionicons name="search" size={24} color={theme.text} />
+    </TouchableOpacity>
+    
+
+  </View>
+  )
+}
+
+

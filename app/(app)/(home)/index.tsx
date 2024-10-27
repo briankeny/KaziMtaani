@@ -1,72 +1,188 @@
+import { HelloWave } from "@/kazisrc/components/HelloWave";
+import { useGetResourceMutation } from "@/kazisrc/store/services/authApi";
+import { globalstyles } from "@/kazisrc/styles/styles";
+import { HomeMenuProps } from "@/kazisrc/types/types";
+import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { TouchableOpacity, View, SafeAreaView,Text } from "react-native";
+import { useSelector } from "react-redux";
 
-import Swipper from '@/kazisrc/components/Swipper';
-import { useGetResourceMutation } from '@/kazisrc/store/services/authApi';
-import { setJobPosts } from '@/kazisrc/store/slices/jobsSlice';
-import { useAppDispatch } from '@/kazisrc/store/store';
-import { globalstyles } from '@/kazisrc/styles/styles';
-import React, { useEffect, useRef } from 'react'
-import { SafeAreaView, View,Text } from 'react-native';
-import { useSelector } from 'react-redux';
-
-const HomeScreen = () => {
-    const dispatch = useAppDispatch()
-    const swipeableRowRef = useRef<any>(null)    
+export default function HomeScreen(){
     const { theme, isNightMode } = useSelector((state: any) => state.theme);
-    const {jobs} =  useSelector((state:any)=>state.jobs)
+    const { userData,authentication } = useSelector((state: any) => state.auth);
     const [getData, { isLoading,isError,error,isSuccess}] = useGetResourceMutation();
- 
-    async function fetchJobPosts() {
-        try{
-          const resp:any = await getData({endpoint:'/job-posts/'}).unwrap()
-          if(resp){
-            const list  = [...jobs, resp.results]
-            const updt_jobs = [... new Set(list)]
-            dispatch(setJobPosts(updt_jobs))
-          }
-        }
-        catch(error:any){
-        }
+  
+  
+    function goToScreen(screen:any){
+        router.replace(screen)
     }
-
-
-   useEffect(()=>{
-     fetchJobPosts()
-   },[])
-
-//    function RenderJobs(){
-//     return(
-//         <FlatList
-//         keyExtractor={(item)=> item.advert_id.toString()}
-//         data={jobexamples}
-//         renderItem={
-//           ({item,index}:{item:any,index:number})=>
-//             <JobCard
-//             item={item}
-//             theme={theme}
-//             key={index}
-//             />
-//         }
-//       />
-//     )
-//    }
+  
+    const Menu = ({
+      Icon,
+      // onPress= ()=>void,
+      iconSize = 24,
+      iconColor = "#888",
+      contentTextColor="#fff",
+      headerTextColor='#fff',
+      header = "",
+      content = "",
+      iconName = "",
+      backColor = "",
+    }: HomeMenuProps) => {
     
-  return (
-          <SafeAreaView
+      return (
+        <TouchableOpacity
+          style={[
+            globalstyles.card,
+            { width: "35%", margin: 4, elevation: 6 },
+            { backgroundColor: backColor ? backColor : theme.card },
+          ]}
+          // onPress={onPress}
+        >
+          <View style={[globalstyles.column, { paddingLeft: 5 }]}>
+            <Text style={[{ color:contentTextColor,fontSize:16,fontWeight:600 }]}>
+              {content}
+            </Text>
+            <Text style={[ { color:headerTextColor,fontSize:11,paddingVertical:5 }]}>
+              {header}
+            </Text>
+          </View>
+  
+          <Icon
+            style={[{ position: "absolute", right: 25, top:10 }]}
+            name={iconName}
+            size={iconSize}
+            color={iconColor}
+          />
+        </TouchableOpacity>
+      );
+    };
+  
+    return (
+      <SafeAreaView
         style={[globalstyles.safeArea, { backgroundColor: theme.background}]}
       >
-        <View style={[ globalstyles.column,{height:'100%',width:'100%'}]}>
-        <Swipper
-        initialPage={0}
-        swipperStyles={{height:'100%',width:'100%',flex:1}}
-        setPage={()=>console.log('yes')}>
-            
-            <Text style={{color:theme.text,textAlign:'center'}} key="1">Hello</Text>
-            <Text style={{color:theme.text}} key="2" >Hello brother</Text>
-        </Swipper>
+  
+          <View style={[globalstyles.row,{gap:0,paddingHorizontal:20,paddingVertical:5}]}>
+            <Text  style={[{
+              color:theme.text
+              ,fontSize:20,
+              fontWeight:'600'
+              
+            }]}>
+            Hi {userData?.full_name}
+            </Text>
+            <HelloWave
+               helloStyle = {{paddingHorizontal:10}}
+               helloStyleText = { {
+                fontSize: 28,
+                lineHeight:33,
+              }}
+            />
+            </View>
+  
+          <View style={[globalstyles.columnStart,{  paddingHorizontal:20,paddingVertical:4}]}>
+             <Text style={{
+              color:'green',
+              fontSize:20,
+              fontFamily:'Poppins-Bold'
+             }}>
+                Find Your Dream Job Here
+             </Text>
+          </View>
+         
+  
+        <View style={[globalstyles.card,{elevation:2,backgroundColor:'rgb(0, 100, 51)',width:'80%'}]}>
+  
+            <View style={[globalstyles.row,{alignSelf:'center',padding:10,gap:10}]}>
+              <Text style={[{color:'#fff',fontSize:30,fontWeight:'600'}]}>300</Text>
+              <Text style={[{color:'#fff',paddingTop:10}]}>posts</Text>
+            </View>
+  
+          <View style={[globalstyles.rowEven]}>
+            <View style={[globalstyles.row,{gap:20}]}>
+              <Text style={[{color:'#fff'}]}>Open</Text>
+              <Text style={[{color:'#fff',fontWeight:'600',fontSize:18}]}>{230}</Text>
+            </View>
+  
+            <View style={[globalstyles.row,{gap:20}]}>
+              <Text style={[{color:'#fff'}]}>Closed</Text>
+              <Text style={[{color:'#fff',fontWeight:'600',fontSize:18}]}>{70}</Text>
+            </View>
+          </View>
+  
         </View>
-       
-        </SafeAreaView>
-  )
-}
-
-export default HomeScreen
+  
+  
+        <Text style={[{color:theme.text,fontWeight:'500',padding:20}]}>My Analytics</Text>
+              
+        <View style={[globalstyles.rowEven,{overflow:'hidden',flexWrap:'wrap',columnGap:2}]}>
+  
+         <Menu
+                header="Profile visits"
+                headerTextColor={theme.text}
+                contentTextColor={theme.text}
+                backColor={theme.card}
+                content="360"
+                iconColor="rgb(177, 137, 2)"
+                iconSize={21}
+                iconName="users"
+                Icon={FontAwesome}
+                // onPress={() => goToScreen("Transport")}
+              />
+  
+              <Menu
+                header="Impressions"
+                headerTextColor={theme.text}
+                contentTextColor={theme.text}
+                backColor={theme.card}
+                content="4000"
+                iconColor={'red'}
+                iconSize={28}
+                iconName="bar-chart"
+                Icon={MaterialIcons}
+                // onPress={() => goToScreen("Transport")}
+              />
+  
+  
+              <Menu
+                header="Search Appearances"
+                headerTextColor={theme.text}
+                contentTextColor={theme.text}
+                backColor={theme.card}
+                content="40"
+                iconColor="rgb(106, 90, 205)"
+                iconSize={21}
+                iconName="search"
+                Icon={MaterialIcons}
+                // onPress={() => goToScreen("Transport")}
+              />
+  
+              <Menu
+                header="Job posts Reviews"
+                content="4"
+                headerTextColor={theme.text}
+                contentTextColor={theme.text}
+                backColor={theme.card}
+                iconColor="orange"
+                iconSize={28}
+                iconName="reviews"
+                Icon={MaterialIcons}
+                // onPress={() => goToScreen("Transport")}
+              />
+  
+            </View>
+  
+  
+      </SafeAreaView>
+    );
+  };
+  
+  
+  export function JobList (){
+    return( 
+    <View>
+  
+    </View>
+    )
+  }

@@ -3,7 +3,7 @@ import React from 'react'
 
 const StackLayout = () => {
   return (
-    <Stack screenOptions={{headerShown:false}}>
+    <Stack screenOptions={{headerShown:true}}>
         <Stack.Screen name='index'/>
         <Stack.Screen name='edit'/>
     </Stack>

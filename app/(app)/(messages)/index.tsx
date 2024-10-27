@@ -3,10 +3,10 @@ import { router } from 'expo-router';
 import { SafeAreaView, ScrollView, View,Text,TouchableOpacity,Image } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useGetResourceMutation } from '@/kazisrc/store/services/authApi';
-import { setConvos } from '@/kazisrc/store/slices/messageSlice';
+import { setConvo, setConvos } from '@/kazisrc/store/slices/messageSlice';
 import { useAppDispatch } from '@/kazisrc/store/store';
 import { globalstyles } from '@/kazisrc/styles/styles';
-import { dateFormater, pickImage } from '@/kazisrc/utils/utils';
+import { dateFormater} from '@/kazisrc/utils/utils';
 
 
 const ConversationsScreen = () => {
@@ -41,8 +41,9 @@ const ConversationsScreen = () => {
 
     }
 
-    function goToScreen(screen:any){
-      router.push(screen)
+    function goToScreen(item:any){
+      dispatch(setConvo(item))
+      router.push('/(app)/(messages)/conversation')
     }
 
     useEffect(()=>{
@@ -131,7 +132,7 @@ const ConversationsScreen = () => {
                   key={index}
                   item ={convo} 
                   date = {dat}
-                  handleRowPress = {()=>goToScreen({params:{chat_id:convo.chat_id} , screen:"[chatid]"})} 
+                  handleRowPress = {()=>goToScreen(convo)} 
                   theme = {theme}
                   participant = {participant} 
                   time = {time} 
@@ -140,7 +141,7 @@ const ConversationsScreen = () => {
             )})
           
             :
-            <View style={[globalstyles.columnCenter]}>
+            <View style={[globalstyles.columnCenter,{height:'100%'}]}>
                 <Text style={{color:theme.text}}>You have 0 messages</Text>
             </View>
             

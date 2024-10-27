@@ -4,7 +4,7 @@ import React from 'react'
 import { SafeAreaView, View,Image,Text } from 'react-native';
 import { useSelector } from 'react-redux';
 
-export function UserProfileScreen () {
+export default function UserProfileScreen () {
     const { theme, isNightMode } = useSelector((state: any) => state.theme);
     const { userData } = useSelector((state: any) => state.auth);
 

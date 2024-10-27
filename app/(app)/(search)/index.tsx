@@ -1,18 +1,7 @@
-import { useAppDispatch } from "@/kazisrc/store/store";
-import { globalstyles } from "@/kazisrc/styles/styles";
-import { SafeAreaView } from "react-native";
-import { useSelector } from "react-redux";
+import { Redirect, router } from "expo-router"
+import { useSelector } from "react-redux"
 
-export default function SearchScreen(){
-    const dispatch = useAppDispatch();
-    const { theme, isNightMode } = useSelector((state: any) => state.theme);
-    const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
-      (state: any) => state.modal
-    );
-    return(
-        <SafeAreaView
-        style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
-            
-        </SafeAreaView>
-    )
+export default function SearchScreen(){    
+    const {userData} = useSelector((state:any)=>state.auth)
+    return( userData.account_type == 'recruiter'? <Redirect href={'/(app)/(people)'} /> :<Redirect href={'/(app)/(jobs)'} />  ) 
 }

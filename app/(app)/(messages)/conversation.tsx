@@ -3,7 +3,7 @@ import { useGetResourceMutation, usePostFormDataMutation } from '@/kazisrc/store
 import { setMessages } from '@/kazisrc/store/slices/messageSlice';
 import { useAppDispatch } from '@/kazisrc/store/store';
 import { globalstyles } from '@/kazisrc/styles/styles';
-import { dateFormater, pickImage, randomKeyGenerator, removeSpace } from '@/kazisrc/utils/utils';
+import { dateFormater, imageAndBodyConstructor, pickImage, randomKeyGenerator, removeSpace } from '@/kazisrc/utils/utils';
 import { validationBuilder } from '@/kazisrc/utils/validator';
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, ScrollView, TouchableOpacity,Text, Image, View } from 'react-native'
@@ -74,7 +74,8 @@ export function ChatScreen () {
            }
           images.push(img)
         }
-        const resp = await postData({data:validated,endpoint:'/messages/'}).unwrap()
+        const dataToSubmit =imageAndBodyConstructor({content:validated,images:images,uploadname:["media"]});
+        const resp = await postData({data:dataToSubmit,endpoint:'/messages/'}).unwrap()
         if(resp){
           const uploaded = resp?.data ? resp.data : validated 
           const latest = [...messages,resp.data]

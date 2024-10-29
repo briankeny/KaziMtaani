@@ -31,9 +31,12 @@ export default function RootLayout() {
     loadFonts();
   }, []);
 
-  console.log('inside app')
+  if(!fontsLoaded){
+    return null
+  }
 
   return (
+    <GestureHandlerRootView>
     <Provider store={store}>
       <ThemeProvider
         value={{
@@ -64,6 +67,7 @@ export default function RootLayout() {
           </Stack>
       </ThemeProvider>
     </Provider>
+    </GestureHandlerRootView>
   );
 }
 

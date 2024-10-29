@@ -1,5 +1,6 @@
 import Toast from "@/kazisrc/components/Toast";
 import { usePostNoAuthMutation } from "@/kazisrc/store/services/authApi";
+import { setAuthScreenIndex } from "@/kazisrc/store/slices/authSlice";
 import { clearModal, rendermodal } from "@/kazisrc/store/slices/modalSlice";
 import { useAppDispatch } from "@/kazisrc/store/store";
 import { globalstyles } from "@/kazisrc/styles/styles";
@@ -75,7 +76,11 @@ export default function NumberVerification() {
     }
     },[isError])
 
-      
+
+    useEffect(()=>{
+      dispatch(setAuthScreenIndex(1))
+    },[])
+       
     return(
       <SafeAreaView
       style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>

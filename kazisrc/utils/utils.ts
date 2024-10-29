@@ -1,5 +1,26 @@
 import * as ImagePicker from 'expo-image-picker';
 
+interface ImageBodyConstProps {
+  images:Array<any>;
+  uploadname:Array <string> ;
+  content:object;
+}
+
+
+//append image plus data 
+export function imageAndBodyConstructor({content,images,uploadname}:ImageBodyConstProps){
+  const data = new FormData();
+  Object.entries(content).forEach(([key,value])=>data.append(key,value))
+  if (images.length >0){
+  images.forEach((image,index)=>data.append(
+    `${uploadname[index]}`,image
+  ))
+
+}
+return data
+}
+
+
 //remove Space
 export function removeSpace(item:string) {
     const noSpace = item.trim().replace(/\s/g, "");

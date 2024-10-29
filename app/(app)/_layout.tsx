@@ -11,7 +11,7 @@ export default function TabLayout() {
   if(!authentication)
     {
     return <Redirect href="/signin"/>
-    }
+   }
   
   return (
       <Tabs
@@ -62,7 +62,6 @@ export default function TabLayout() {
           name="(messages)"
           options={{
             title: "Messages",
-
             tabBarIcon: ({ color, focused }) => (
               <TabBarIcon
                 name={focused ? "mail" : "mail-outline"}

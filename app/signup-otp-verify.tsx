@@ -1,6 +1,7 @@
 import { TaggedInput } from '@/kazisrc/components/Inputs';
 import Toast from '@/kazisrc/components/Toast';
 import { usePostNoAuthMutation } from '@/kazisrc/store/services/authApi';
+import { setAuthScreenIndex } from '@/kazisrc/store/slices/authSlice';
 import { rendermodal, clearModal } from '@/kazisrc/store/slices/modalSlice';
 import { useAppDispatch } from '@/kazisrc/store/store';
 import { globalstyles } from '@/kazisrc/styles/styles';
@@ -74,6 +75,7 @@ function OtpVerifyScreen() {
 
   useEffect(()=>{
     if(isError){
+      console.log(error)
         rendermodal({
             dispatch: dispatch,
             header: "Error!",
@@ -82,6 +84,10 @@ function OtpVerifyScreen() {
           })
     }
     },[isError])
+
+    useEffect(()=>{
+      dispatch(setAuthScreenIndex(2))
+    },[])
 
   return (
     <SafeAreaView

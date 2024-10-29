@@ -1,6 +1,7 @@
 import { TaggedInput } from '@/kazisrc/components/Inputs';
 import Toast from '@/kazisrc/components/Toast';
 import { usePostNoAuthMutation } from '@/kazisrc/store/services/authApi';
+import { setAuthScreenIndex } from '@/kazisrc/store/slices/authSlice';
 import { clearModal, rendermodal } from '@/kazisrc/store/slices/modalSlice';
 import { useAppDispatch } from '@/kazisrc/store/store';
 import { globalstyles } from '@/kazisrc/styles/styles';
@@ -24,7 +25,9 @@ const SignUpScreen = () => {
   const params:ParamTypes = useLocalSearchParams();
   const {theme, isNightMode} = useSelector((state:any)=>state.theme)
   const [full_name, setFullName] = useState<string>('');
+  const [email, setEmail] = useState<string>('')
   const [account_type, setAccountType] = useState<string>('jobseeker');
+  const [industry,setIndustry] = useState<string>('')
   const [password, setPassword] = useState<string>('');
   const [repeat_password, setRepeatPassword] = useState<string>('');
   const [prevData, setPrevData ] = useState<any>([])
@@ -53,6 +56,17 @@ const SignUpScreen = () => {
           type:'string'
         },
         {
+          industry: industry,
+          minlength:3, 
+          type:'string'
+        },
+        {
+          email:email,
+          minlength:10, 
+          type:'email',
+          canBeEmpty:true
+        },
+        {
           account_type: account_type,
           minlength:4,
           type:'string'
@@ -71,8 +85,6 @@ const SignUpScreen = () => {
 
       rules.push(JSON.parse(mobile))
       rules.push(JSON.parse(otp))
-
-     
 
        if (repeat_password != password){
         const err = {
@@ -167,7 +179,9 @@ const SignUpScreen = () => {
         }
     },[isError])
 
-
+    useEffect(()=>{
+      dispatch(setAuthScreenIndex(3))
+    },[])
 
   
   return (
@@ -221,18 +235,33 @@ const SignUpScreen = () => {
            placeholder="Enter Full Name"
            errorMessage = { errors.full_name ? 'Full Name is required. Minimum of 5 characters' : ''}
          />
+
+        <TaggedInput
+           onChangeText={(val:any)=> setIndustry(val)}
+           onBlur={()=>setFocus('')}
+           onFocus={()=>setFocus('ind')}
+           maxLength={50}
+           taggedInputContainerStyles={{
+             padding:5,borderColor:focused == 'ind'?'orange':'#888'}}
+           value={industry}
+           caption= {'Profession or Industry'}
+           placeholder="ex. Plumber, electrician, cleaner"
+           errorMessage = { errors.industry ? errors.industry : ''}
+         />
+         
+         <TaggedInput
+           onChangeText={(val:any)=> setEmail(val)}
+           onBlur={()=>setFocus('')}
+           onFocus={()=>setFocus('email')}
+           maxLength={50}
+           taggedInputContainerStyles={{
+             padding:5,borderColor:focused == 'email'?'orange':'#888'}}
+           value={email}
+           caption= {'Email Adress'}
+           placeholder="ex. abc@xyz.com"
+           errorMessage = { errors.email ? 'Email address is required!' : ''}
+         />
     
-    
-           <View style={[{width:'80%',alignSelf:'center'}]}>
-         <Text
-           style={{
-             fontSize:10,
-             lineHeight:15,
-             color:theme.text}}
-           > 
-           ** All Fields Are Required Please Fill
-           </Text>
-         </View>
      
               <TaggedInput
                 onChangeText={(val:any)=>setPassword(val)}

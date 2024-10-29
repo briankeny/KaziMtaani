@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit"
 import { save} from "../storage"
-import { Theme } from "../types/types"
+import { Theme } from "@/kazisrc/types/types"
 
 export const colorsdark:Theme ={
     background: '#111',
@@ -13,7 +13,7 @@ export const colorsdark:Theme ={
 }
 
 export const colorslight:Theme ={
-    background: "rgba(255,255,255,0.6)",
+    background: "rgb(245, 245, 245)",
     primary: "#fff",
     card: "#fff",
     text: "#111",

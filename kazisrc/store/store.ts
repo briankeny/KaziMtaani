@@ -56,7 +56,7 @@ export const store = configureStore({
   .concat(authApi.middleware)
     .concat((store) => (next) => async (action:any) => {
       if (
-        action.type.endsWith('rejected') && 
+      action.type.endsWith('rejected') && 
       action.payload?.data?.code === 'token_not_valid' && 
       action.payload.status === 401) {   
       try{
@@ -66,6 +66,7 @@ export const store = configureStore({
         data &&  store.dispatch(setTokens(data))
       }
       catch(error:any){
+        store.dispatch(setTokens({refresh:null,access:null}));
         rendermodal({
           dispatch : store.dispatch,
           header:'Authentication Error!',

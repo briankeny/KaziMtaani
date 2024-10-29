@@ -21,6 +21,11 @@ const JobPostCreateScreen = () => {
   const [experienceLevel, setExperienceLevel] = useState<string>('');
   const [salaryRange, setSalaryRange] = useState<string>('');
 
+//   const handleMapPress = (event:any) => {
+//     const { latitude, longitude } = event.nativeEvent.coordinate;
+//     setLocation({ latitude, longitude });
+// };
+
   const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
     (state: any) => state.modal
   );

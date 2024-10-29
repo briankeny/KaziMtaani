@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     authentication: false,
+    authscreen_index:0,
     myLocation:null,
     onlineStatus:false,
     authError:"",
@@ -19,6 +20,9 @@ const authSlice = createSlice({
       },
       setLocation : (state,action)=> {
         state.myLocation = action.payload
+      },
+      setAuthScreenIndex: (state,action)=> {
+        state.authscreen_index = action.payload
       },
       setOnlineStatus:(state,action)=>{
         state.onlineStatus = action.payload
@@ -41,7 +45,9 @@ const authSlice = createSlice({
 }
 )
 
-export const {setAuth,setUser,setAuthError,setLocation,setOnlineStatus,logout,setTokens} = authSlice.actions
+export const {setAuth,setUser,setAuthError,
+  setAuthScreenIndex,
+  setLocation,setOnlineStatus,logout,setTokens} = authSlice.actions
 
 
 export default authSlice.reducer;

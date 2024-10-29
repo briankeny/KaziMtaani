@@ -1,188 +1,585 @@
-import { HelloWave } from "@/kazisrc/components/HelloWave";
+import BottomSheetDrawer from "@/kazisrc/components/BottomSheetDrawer";
+import { RenderButtonRow } from "@/kazisrc/components/Buttons";
+import MapMarker from "@/kazisrc/components/MapMarker";
+import MapViewer from "@/kazisrc/components/MapViewer";
 import { useGetResourceMutation } from "@/kazisrc/store/services/authApi";
 import { globalstyles } from "@/kazisrc/styles/styles";
-import { HomeMenuProps } from "@/kazisrc/types/types";
-import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { dateFormater } from "@/kazisrc/utils/utils";
+import {
+  AntDesign,
+  FontAwesome,
+  Ionicons,
+  MaterialIcons,
+} from "@expo/vector-icons";
+import BottomSheet from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
-import { TouchableOpacity, View, SafeAreaView,Text } from "react-native";
+import { useMemo, useRef, useState } from "react";
+import {
+  TouchableOpacity,
+  View,
+  SafeAreaView,
+  Text,
+  ScrollView,
+  FlatList,
+  Image,
+  Pressable,
+  Dimensions,
+} from "react-native";
 import { useSelector } from "react-redux";
 
-export default function HomeScreen(){
-    const { theme, isNightMode } = useSelector((state: any) => state.theme);
-    const { userData,authentication } = useSelector((state: any) => state.auth);
-    const [getData, { isLoading,isError,error,isSuccess}] = useGetResourceMutation();
-  
-  
-    function goToScreen(screen:any){
-        router.replace(screen)
-    }
-  
-    const Menu = ({
-      Icon,
-      // onPress= ()=>void,
-      iconSize = 24,
-      iconColor = "#888",
-      contentTextColor="#fff",
-      headerTextColor='#fff',
-      header = "",
-      content = "",
-      iconName = "",
-      backColor = "",
-    }: HomeMenuProps) => {
-    
-      return (
-        <TouchableOpacity
-          style={[
-            globalstyles.card,
-            { width: "35%", margin: 4, elevation: 6 },
-            { backgroundColor: backColor ? backColor : theme.card },
-          ]}
-          // onPress={onPress}
-        >
-          <View style={[globalstyles.column, { paddingLeft: 5 }]}>
-            <Text style={[{ color:contentTextColor,fontSize:16,fontWeight:600 }]}>
-              {content}
-            </Text>
-            <Text style={[ { color:headerTextColor,fontSize:11,paddingVertical:5 }]}>
-              {header}
-            </Text>
-          </View>
-  
-          <Icon
-            style={[{ position: "absolute", right: 25, top:10 }]}
-            name={iconName}
-            size={iconSize}
-            color={iconColor}
-          />
-        </TouchableOpacity>
-      );
-    };
-  
+export default function HomeScreen() {
+  const { theme, isNightMode } = useSelector((state: any) => state.theme);
+  const { userData, authentication } = useSelector((state: any) => state.auth);
+  const [analytics, setAnalytics] = useState<any | null>(null);
+
+  const [getData, { data, isLoading, isError, error, isSuccess }] =
+    useGetResourceMutation();
+
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const [openBottomSheetDrawer, setOpenBottomSheetDrawer] = useState(false);
+  const snapPoints = useMemo(() => ["25%", "50%", "75%", "100%"], []);
+
+  async function setchDataAnlytics() {
+    try {
+      const resp = await getData({ endpoint: "/analytics/" }).unwrap();
+      if (resp) {
+        resp.data && setAnalytics(resp.data);
+      }
+    } catch (error) {}
+  }
+
+  function mapAction() {
+    console.log("Clicked");
+  }
+
+  function goToScreen(screen: any) {
+    router.replace(screen);
+  }
+
+  const Menu = ({
+    Icon,
+    iconSize = 24,
+    iconColor = "#888",
+    header = "",
+    content = "",
+    iconName = "",
+  }: any) => {
     return (
-      <SafeAreaView
-        style={[globalstyles.safeArea, { backgroundColor: theme.background}]}
+      <View
+        style={[
+          globalstyles.column,
+          {
+            width: "30%",
+            marginHorizontal: 20,
+            padding: 2,
+            overflow: "hidden",
+          },
+        ]}
       >
-  
-          <View style={[globalstyles.row,{gap:0,paddingHorizontal:20,paddingVertical:5}]}>
-            <Text  style={[{
-              color:theme.text
-              ,fontSize:20,
-              fontWeight:'600'
-              
-            }]}>
-            Hi {userData?.full_name}
-            </Text>
-            <HelloWave
-               helloStyle = {{paddingHorizontal:10}}
-               helloStyleText = { {
-                fontSize: 28,
-                lineHeight:33,
-              }}
-            />
-            </View>
-  
-          <View style={[globalstyles.columnStart,{  paddingHorizontal:20,paddingVertical:4}]}>
-             <Text style={{
-              color:'green',
-              fontSize:20,
-              fontFamily:'Poppins-Bold'
-             }}>
-                Find Your Dream Job Here
-             </Text>
-          </View>
-         
-  
-        <View style={[globalstyles.card,{elevation:2,backgroundColor:'rgb(0, 100, 51)',width:'80%'}]}>
-  
-            <View style={[globalstyles.row,{alignSelf:'center',padding:10,gap:10}]}>
-              <Text style={[{color:'#fff',fontSize:30,fontWeight:'600'}]}>300</Text>
-              <Text style={[{color:'#fff',paddingTop:10}]}>posts</Text>
-            </View>
-  
-          <View style={[globalstyles.rowEven]}>
-            <View style={[globalstyles.row,{gap:20}]}>
-              <Text style={[{color:'#fff'}]}>Open</Text>
-              <Text style={[{color:'#fff',fontWeight:'600',fontSize:18}]}>{230}</Text>
-            </View>
-  
-            <View style={[globalstyles.row,{gap:20}]}>
-              <Text style={[{color:'#fff'}]}>Closed</Text>
-              <Text style={[{color:'#fff',fontWeight:'600',fontSize:18}]}>{70}</Text>
-            </View>
-          </View>
-  
+        <View style={[globalstyles.rowWide]}>
+          <Icon name={iconName} size={iconSize} color={iconColor} />
+
+          <Text
+            style={[
+              {
+                color: "#fff",
+                fontSize: 16,
+                fontWeight: "600",
+                alignSelf: "flex-end",
+              },
+            ]}
+          >
+            {content}
+          </Text>
         </View>
-  
-  
-        <Text style={[{color:theme.text,fontWeight:'500',padding:20}]}>My Analytics</Text>
-              
-        <View style={[globalstyles.rowEven,{overflow:'hidden',flexWrap:'wrap',columnGap:2}]}>
-  
-         <Menu
-                header="Profile visits"
-                headerTextColor={theme.text}
-                contentTextColor={theme.text}
-                backColor={theme.card}
-                content="360"
-                iconColor="rgb(177, 137, 2)"
-                iconSize={21}
-                iconName="users"
-                Icon={FontAwesome}
-                // onPress={() => goToScreen("Transport")}
-              />
-  
-              <Menu
-                header="Impressions"
-                headerTextColor={theme.text}
-                contentTextColor={theme.text}
-                backColor={theme.card}
-                content="4000"
-                iconColor={'red'}
-                iconSize={28}
-                iconName="bar-chart"
-                Icon={MaterialIcons}
-                // onPress={() => goToScreen("Transport")}
-              />
-  
-  
-              <Menu
-                header="Search Appearances"
-                headerTextColor={theme.text}
-                contentTextColor={theme.text}
-                backColor={theme.card}
-                content="40"
-                iconColor="rgb(106, 90, 205)"
-                iconSize={21}
-                iconName="search"
-                Icon={MaterialIcons}
-                // onPress={() => goToScreen("Transport")}
-              />
-  
-              <Menu
-                header="Job posts Reviews"
-                content="4"
-                headerTextColor={theme.text}
-                contentTextColor={theme.text}
-                backColor={theme.card}
-                iconColor="orange"
-                iconSize={28}
-                iconName="reviews"
-                Icon={MaterialIcons}
-                // onPress={() => goToScreen("Transport")}
-              />
-  
-            </View>
-  
-  
-      </SafeAreaView>
+        <Text
+          style={[
+            {
+              color: "#fff",
+              fontSize: 11,
+              alignSelf: "flex-start",
+              paddingVertical: 5,
+            },
+          ]}
+        >
+          {header}
+        </Text>
+      </View>
     );
   };
-  
-  
-  export function JobList (){
-    return( 
-    <View>
-  
-    </View>
-    )
-  }
+
+  return (
+    <SafeAreaView
+      style={[globalstyles.safeArea, { backgroundColor: theme.background }]}
+    >
+      <ScrollView>
+        <View
+          style={[
+            globalstyles.columnStart,
+            { paddingHorizontal: 20, paddingVertical: 4 },
+          ]}
+        >
+          <Text
+            style={{
+              color: "green",
+              fontSize: 20,
+              fontFamily: "Poppins-Bold",
+            }}
+          >
+            Find Your Dream Job Here
+          </Text>
+        </View>
+
+        <View
+          style={[
+            {
+              borderRadius: 30,
+              padding: 10,
+              alignSelf: "center",
+              backgroundColor: "rgba(0,80,51,0.8)",
+              width: "90%",
+              marginBottom: 5,
+            },
+          ]}
+        >
+          <Text
+            style={[
+              {
+                color: "#fff",
+                textAlign: "center",
+                fontWeight: "500",
+                padding: 10,
+              },
+            ]}
+          >
+            My Analytics
+          </Text>
+
+          <View style={[globalstyles.rowEven, { overflow: "hidden" }]}>
+            <View
+              style={[
+                globalstyles.row,
+                {
+                  overflow: "hidden",
+                  width: "70%",
+                  gap: 10,
+                  paddingHorizontal: 10,
+                  flexWrap: "wrap",
+                },
+              ]}
+            >
+              <Text style={[{ color: "#fff", fontSize: 12, padding: 10 }]}>
+                {userData.account_type == "recruiter"
+                  ? "Posts"
+                  : "Job \n applications"}
+              </Text>
+              <Text
+                style={[
+                  {
+                    fontSize: 30,
+                    textAlign: "center",
+                    fontWeight: "600",
+                    color: "#fff",
+                  },
+                ]}
+              >
+                {analytics?.posts ? analytics.posts : "0"}
+              </Text>
+            </View>
+
+            <View style={[globalstyles.column, { width: "30%" }]}>
+              <View style={[globalstyles.rowWide]}>
+                <Text style={[{ color: "#fff" }]}>Open</Text>
+                <Text
+                  style={[
+                    {
+                      color: "#fff",
+                      fontWeight: "600",
+                      fontSize: 16,
+                      alignSelf: "flex-end",
+                    },
+                  ]}
+                >
+                  {analytics?.open ? analytics.open : "0"}
+                </Text>
+              </View>
+
+              <View style={[globalstyles.rowWide]}>
+                <Text style={[{ color: "#fff" }]}>Closed</Text>
+                <Text
+                  style={[
+                    {
+                      color: "#fff",
+                      fontWeight: "600",
+                      fontSize: 16,
+                      alignSelf: "flex-end",
+                    },
+                  ]}
+                >
+                  {analytics?.closed ? analytics.closed : "0"}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View
+            style={[
+              globalstyles.rowEven,
+              { overflow: "hidden", flexWrap: "wrap" },
+            ]}
+          >
+            <Menu
+              header="Profile visits"
+              content={analytics?.profilevisits ? analytics.profilevisits : "0"}
+              iconColor="#fff"
+              iconSize={14}
+              iconName="users"
+              Icon={FontAwesome}
+            />
+            <Menu
+              header="Impressions"
+              content={analytics?.impressions ? analytics.impressions : "0"}
+              iconColor={"red"}
+              iconSize={14}
+              iconName="bar-chart"
+              Icon={MaterialIcons}
+            />
+
+            <Menu
+              header="Search Appearances"
+              content={analytics?.searches ? analytics.searches : "0"}
+              iconColor="rgb(255,255,245)"
+              iconSize={14}
+              iconName="search"
+              Icon={MaterialIcons}
+            />
+            <Menu
+              header="Job Reviews"
+              content={analytics?.reviews ? analytics.reviews : "0"}
+              iconColor="orange"
+              iconSize={14}
+              iconName="reviews"
+              Icon={MaterialIcons}
+            />
+          </View>
+        </View>
+
+        <View
+          style={[
+            globalstyles.rowWide,
+            { paddingHorizontal: 20, paddingVertical: 10 },
+          ]}
+        >
+          <Text style={{ fontSize: 19, fontWeight: 700, color: theme.text }}>
+            {userData.account_type == "recruiter"
+              ? "My Jobs"
+              : "Recommendations"}
+          </Text>
+
+          <Pressable>
+            <Text
+              style={{ color: theme.text, fontSize: 18, fontWeight: "500" }}
+            >
+              More...
+            </Text>
+          </Pressable>
+        </View>
+
+        <FlatList
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item, index) => index.toString()}
+          data={[]}
+          renderItem={({ item, index }: { item: any; index: number }) => {
+            const { dat, time } = dateFormater(item?.date_posted);
+            return (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  {
+                    backgroundColor: theme.card,
+                    elevation: 3,
+                    marginHorizontal: 20,
+                    marginBottom: 10,
+                    borderRadius: 10,
+                    padding: 10,
+                    width: Dimensions.get("window").width - 80,
+                  },
+                ]}
+              >
+                <View style={[globalstyles.row, { gap: 10, width: "100%" }]}>
+                  <View
+                    style={{
+                      width: 60,
+                      height: 60,
+                      borderRadius: 30,
+                      overflow: "hidden",
+                      backgroundColor: "orange",
+                    }}
+                  >
+                    {item?.recruiter?.profile_picture ? (
+                      <Image
+                        style={{
+                          width: 60,
+                          height: 60,
+                          borderRadius: 30,
+                          objectFit: "cover",
+                        }}
+                        source={{ uri: item.recruiter.profile_picture }}
+                      />
+                    ) : (
+                      <View
+                        style={[
+                          globalstyles.columnCenter,
+                          {
+                            width: 30,
+                            height: 30,
+                            borderRadius: 15,
+                            overflow: "hidden",
+                            backgroundColor: "rgb(255,123,23)",
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            {
+                              fontFamily: "Poppins-ExtraBold",
+                              fontSize: 20,
+                              color: "#fff",
+                              textAlign: "center",
+                            },
+                          ]}
+                        >
+                          {item?.recruiter?.full_name?.slice(0, 1)}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                  <View style={{ overflow: "hidden", width: "50%" }}>
+                    <Text
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                      style={{
+                        fontWeight: "500",
+                        color: theme.text,
+                        paddingVertical: 8,
+                      }}
+                    >
+                      {item?.recruiter?.full_name ? item.recruiter.full_name :''}
+                    </Text>
+                    <Text
+                      numberOfLines={1}
+                      style={{ fontWeight: "500", fontSize: 13, color: "#888" }}
+                    >
+                      {item?.recruiter?.username ? item.recruiter.username : ''}
+                    </Text>
+                  </View>
+
+                  <Text
+                    style={{
+                      color: theme.text,
+                      fontSize: 10,
+                      top: 0,
+                      right: 0,
+                      position: "absolute",
+                    }}
+                  >
+                    {dat} {time}
+                  </Text>
+                </View>
+
+                <Text
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  style={{
+                    color: theme.text,
+                    paddingHorizontal: 20,
+                    paddingVertical: 5,
+                    fontSize: 18,
+                    fontFamily: "Poppins-Bold",
+                  }}
+                >
+                  {item?.title}
+                </Text>
+
+                <Text
+                  style={{
+                    color: "green",
+                    paddingBottom: 8,
+                    paddingHorizontal: 20,
+                    fontFamily: "Poppins-Bold",
+                    fontSize: 16,
+                  }}
+                >
+                  {item?.salary_range}
+                </Text>
+
+                <View style={[globalstyles.rowWide, { paddingLeft: 20 }]}>
+                  <Text style={{ color: "#888", fontSize: 12 }}>
+                    {item?.experience_level}
+                  </Text>
+
+                  <Text style={{ color: "#888", fontSize: 12 }}>
+                    {item?.employment_type}
+                  </Text>
+
+                  <RenderButtonRow
+                    Icon={AntDesign}
+                    icon_color={theme.text}
+                    icon_name="rightcircle"
+                    icon_size={28}
+                    buttonStyles={{}}
+                  />
+                </View>
+              </TouchableOpacity>
+            );
+          }}
+        />
+
+        <Pressable
+          onPress={() => router.replace("/(app)/(home)/job-post-create")}
+          style={[
+            globalstyles.row,
+            {
+              gap: 23,
+              backgroundColor: "rgb(1,100,51)",
+              marginVertical: 20,
+              borderRadius: 20,
+              paddingVertical: 5,
+              width: "80%",
+              justifyContent: "center",
+              alignSelf: "center",
+            },
+          ]}
+        >
+          <Text style={{ color: "#fff", alignSelf: "center" }}>
+            Create Job Post
+          </Text>
+
+          <Ionicons name="add" size={24} color="#fff" />
+        </Pressable>
+
+        <Text
+          style={{
+            fontSize: 19,
+            fontWeight: 700,
+            color: theme.text,
+            paddingHorizontal: 20,
+            paddingBottom: 10,
+          }}
+        >
+          {userData.account_type == "recruiter"
+            ? "People around me"
+            : "Jobs around me"}
+        </Text>
+
+        <View
+          style={{
+            width: "90%",
+            height: 300,
+            alignSelf: "center",
+            borderRadius: 20,
+            overflow: "hidden",
+          }}
+        >
+          <MapViewer>
+            {testdata.map((item: any, index: number) => (
+              <MapMarker
+                key={index}
+                location={item.location}
+                title={item.name}
+                description="My Beatufiul"
+                theme={theme}
+                imageSource={item.imageSource}
+                onPress={mapAction}
+              />
+            ))}
+          </MapViewer>
+        </View>
+
+        {openBottomSheetDrawer && (
+          <BottomSheetDrawer
+            index={openBottomSheetDrawer ? 1 : -1}
+            snapPoints={snapPoints}
+            handleClose={() => setOpenBottomSheetDrawer(false)}
+            bottomSheetRef={bottomSheetRef}
+          >
+            <View
+              style={{
+                width: Dimensions.get("window").width,
+                height: Dimensions.get("window").height,
+                alignSelf: "center",
+                borderRadius: 20,
+                overflow: "hidden",
+              }}
+            >
+              <MapViewer>
+                {testdata.map((item: any, index: number) => (
+                  <MapMarker
+                    key={index}
+                    location={item.location}
+                    title={item.name}
+                    description="My Beatufiul"
+                    theme={theme}
+                    imageSource={item.imageSource}
+                    onPress={mapAction}
+                  />
+                ))}
+              </MapViewer>
+            </View>
+          </BottomSheetDrawer>
+        )}
+
+        <Pressable
+          onPress={() => setOpenBottomSheetDrawer(true)}
+          style={[
+            globalstyles.row,
+            {
+              borderColor: "red",
+              gap: 23,
+              borderWidth: 1,
+              marginVertical: 20,
+              borderRadius: 20,
+              paddingVertical: 5,
+              width: "80%",
+              justifyContent: "center",
+              alignSelf: "center",
+            },
+          ]}
+        >
+          <Text
+            style={{
+              color: theme.text,
+              alignSelf: "center",
+              fontWeight: "600",
+            }}
+          >
+            Full Maps
+          </Text>
+
+          <FontAwesome name="map-marker" size={24} color="red" />
+        </Pressable>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+export const testdata = [
+  {
+    id: 1,
+    name: "John Doe",
+    location: { latitude: -1.5256749, longitude: 36.92189 },
+    imageSource: {
+      uri: "https://images.unsplash.com/photo-1640695186958-470133dee50f?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    }, // Local image
+  },
+  {
+    id: 2,
+    name: "Jane Smith",
+    location: { latitude: -1.51, longitude: 36.82 },
+    imageSource: {
+      uri: "https://images.unsplash.com/photo-1640695186958-470133dee50f?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    }, // Remote image
+  },
+];

@@ -3,7 +3,7 @@ import { useGetResourceMutation } from '@/kazisrc/store/services/authApi';
 import { setNewNotifications } from '@/kazisrc/store/slices/notificationSlice';
 import { useAppDispatch, useSelector } from '@/kazisrc/store/store';
 import { Stack } from 'expo-router'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 const HomeStacklayout = () => {
   const dispatch = useAppDispatch()
@@ -20,6 +20,11 @@ const HomeStacklayout = () => {
     catch(error){
     }
   } 
+
+
+  useEffect(()=>{
+    fetchNewNotifications()
+  },[])
 
   return (
    <Stack screenOptions={{

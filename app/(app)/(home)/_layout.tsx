@@ -35,17 +35,20 @@ const HomeStacklayout = () => {
     },
     headerTitleStyle:{
       color: theme.text,
-      fontSize: 12
-    }
-  
+      fontSize: 21
+    },
+    headerTitleAlign:'center'
+
    }}>
         <Stack.Screen 
         options={{
           header: () => <HomeHeader />,
         }}
         name='index'/>
-        <Stack.Screen name='notifications'/>
-        <Stack.Screen name='job-applications'/>
+        <Stack.Screen options={{title:'Notifications'}} name='notifications'/>
+        <Stack.Screen options={{title:'My Applications'}} name='job-applications'/>
+        <Stack.Screen options={{title:'My Job Post'}} name='job-post-admin'/>
+        <Stack.Screen options={{title:'Create Job Post'}} name='job-post-create'/>
    </Stack>
   )
 }

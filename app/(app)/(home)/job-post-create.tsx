@@ -1,52 +1,192 @@
-import React, { useState } from 'react';
-import { SafeAreaView, View, Text, Button, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, View, Text,  ScrollView, TouchableOpacity ,Image, Pressable} from 'react-native';
 import { usePostFormDataMutation } from '@/kazisrc/store/services/authApi';
 import { useAppDispatch, useSelector } from '@/kazisrc/store/store';
 import { globalstyles } from '@/kazisrc/styles/styles';
 import { RenderTaggedInput } from '@/kazisrc/components/Inputs';
 import { clearModal } from '@/kazisrc/store/slices/modalSlice';
 import Toast from '@/kazisrc/components/Toast';
+import RenderPicker from '@/kazisrc/components/RenderPicker';
+import { validationBuilder } from '@/kazisrc/utils/validator';
+import { formatDate, imageAndBodyConstructor, pickImage, randomKeyGenerator, removeSpace, showToastWithGravity } from '@/kazisrc/utils/utils';
+import { MaterialIcons } from '@expo/vector-icons';
+import { RenderButtonRow } from '@/kazisrc/components/Buttons';
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { router } from 'expo-router';
 
 const JobPostCreateScreen = () => {
   const dispatch = useAppDispatch();
   const [postData, { isLoading, isSuccess, error, isError }] = usePostFormDataMutation();
   const { theme, isNightMode } = useSelector((state: any) => state.theme);
+  const {userData} = useSelector((state:any)=>state.auth)
   // Form state variables
   const [errors,setErrors] = useState <any>({})
   const [focused,setFocus]  = useState<string>('')
   const [title, setTitle] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [location, setLocation] = useState<string>('');
-  const [employmentType, setEmploymentType] = useState<string>('');
-  const [experienceLevel, setExperienceLevel] = useState<string>('');
-  const [salaryRange, setSalaryRange] = useState<string>('');
+  const [employment_type, setEmployment_type] = useState<string | any>('');
+  const [experience_level, setExperience_level] = useState<string | any>('');
+  const [salary_range, setSalary_range] = useState<string>('');
 
-//   const handleMapPress = (event:any) => {
-//     const { latitude, longitude } = event.nativeEvent.coordinate;
-//     setLocation({ latitude, longitude });
-// };
+  const [openDate,setOpenDate] = useState<any>(false)
+  const [deadline_date, setDeadlineDate] = useState <any>(new Date());
+
+  const [image, setImage] = useState<any>(null);
+  const [newImage, setNewImage] = useState(false);
+  const [imageType, setImageType] = useState("png");
+
+
+  const handleMapPress = (event:any) => {
+    const { latitude, longitude } = event.nativeEvent.coordinate;
+    console.log(latitude,longitude)
+    // setLocation({ latitude, longitude });
+};
+
+    async function openImagePicker() {
+      try {
+        const result = await pickImage();
+        if (!result.canceled) {
+          const img = result?.assets[0]?.uri ? result.assets[0].uri : ''
+          const imgtype = img ?  img.split('.')[-1] : ''
+          img &&  setNewImage(true);
+          img && setImage(img);
+          imgtype && setImageType(imageType)
+        }
+      } catch (error: any) {}
+    }
+
 
   const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
     (state: any) => state.modal
   );
   
-  //Toggle Modal
+  // Clear Image
+  function clearImage(){
+    setNewImage(false)
+    setImage(null)
+    setImageType('')
+  }
 
+  //Toggle Modal
   function closeModal(){
     dispatch(clearModal())
   }
   
 
   const handleSubmit = async () => {
-    
+    if(!isLoading){
+      try{
+        const rules = [
+          {
+            title : title,
+            type:'string',
+            minLength:8
+          },
+          {
+            description : description,
+            type:'string',
+            minLength:8
+          },
+          {
+            location:location,
+            type:'string',
+            minLength:8
+          },
+          {
+            employment_type :employment_type,
+            type:'string',
+            minLength:8
+          },
+          {
+            experience_level :experience_level,
+            type:'string',
+            minLength:8
+          },   
+          {
+            salary_range :salary_range,
+            type:'string',
+            minLength:8
+          },{
+            deadline_date:formatDate(deadline_date),
+            type:'string',
+            minlength:5,
+            canBeEmpty:true
+          }
+        ]
+        
+        const validated = validationBuilder(rules)
+        const images = []
+        
+        if(newImage){
+              let img ={   
+              uri: image,
+              type: `image/${imageType}`,
+              name: `${removeSpace(userData.full_name)}${randomKeyGenerator()}.${imageType}`
+            }
+            images.push(img)
+          }
+        const dataToSubmit =imageAndBodyConstructor({content:validated,images:images,uploadname:["job_picture"]});
+        const resp = await postData({enpoint:'/job-posts/' , data:dataToSubmit}).unwrap()
+        if(resp){
+            
+        }
+      }
+      catch(error:any){
+        setErrors(error)
+      }
+    }
   };
+
+  useEffect(()=>{
+    console.log(employment_type)
+  },[employment_type])
 
   return (
     <SafeAreaView style={[globalstyles.safeArea, { backgroundColor: theme.background }]}>
      <ScrollView>
-      <View style={[globalstyles.card,globalstyles.column,{backgroundColor:theme.card}]}>
+
+     <TouchableOpacity onPress={openImagePicker}
+            style={[
+              {height:300,
+                width:'100%',
+                overflow:'hidden',
+                backgroundColor:'rgba(0,0,0,0.05)'}]}
+          >
+            {image ?
+              <Image source={{ uri: image }} style={{width:'100%',height:'100%',resizeMode:'cover'}} />
+            :
+              <MaterialIcons   style={{ alignSelf: "center" ,paddingTop:40}}
+               name="add-a-photo" size={100} color='rgb(255,160, 0)' />
+            }
+
+            {!image &&
+              <Text style={[{color:'#777',textAlign:'center',
+              lineHeight:24,
+              fontSize:18,padding:30}]}>
+                **optional {'\n'} Upload a picture of the job  ex. Logo, task, broken item ,work site etc
+              </Text>
+            }
+      </TouchableOpacity>
+      
+      { newImage && RenderButtonRow({
+              buttonStyles:[globalstyles.row,{alignSelf:'center',
+                borderWidth:1,
+                borderColor:'red',borderRadius:20,marginVertical:5,padding:10}],
+              action: clearImage,
+              button_text: `Remove Image`,
+              Icon:MaterialIcons,
+              buttonTextStyles:[{color:theme.text,fontSize:16}],
+              icon_name:"delete",
+              icon_color:"red"
+        })}
+       
+
+      <View style={[globalstyles.column,{backgroundColor:theme.card,
+        borderRadius:20,paddingVertical:10,marginVertical:10,elevation:5}]}>
+
         <RenderTaggedInput
-        maxLength={5}
+        maxLength={50}
           onBlur={()=>setFocus('')}
           onFocus={()=>setFocus('ttl')}
           taggedInputContainerStyles={{
@@ -58,23 +198,28 @@ const JobPostCreateScreen = () => {
           placeholder="Job Title"
           caption="Title"
           captionContainerStyles={{ backgroundColor: theme.card }}
+          errorMessage={errors.title ? errors.title : ''}
         />
+
         <RenderTaggedInput
-        maxLength={5}
+        maxLength={200}
           onBlur={()=>setFocus('')}
           onFocus={()=>setFocus('desc')}
-          taggedInputContainerStyles={{
-            padding:5,
+          taggedInputContainerStyles={[globalstyles.columnCenter,{
+            padding:5,minHeight:80,
           borderColor:focused == 'desc'?'orange':'#888'
-          }}
+          }]}
+          taggedInputStyles={{textAlign:'center'}}
           value={description}
           onChangeText={(val)=>setDescription(val)}
-          placeholder="Job Description"
-          caption="Description"
+          placeholder="Write a  brief description about the job here here ..."
+          caption="Job Description"
           captionContainerStyles={{ backgroundColor: theme.card }}
+          errorMessage={errors.description ? errors.description : ''}
         />
+        
         <RenderTaggedInput
-        maxLength={5}
+        maxLength={50}
           onBlur={()=>setFocus('')}
           onFocus={()=>setFocus('loc')}
           taggedInputContainerStyles={{
@@ -86,57 +231,86 @@ const JobPostCreateScreen = () => {
           placeholder="ex Kitengela, Kajiado"
           caption="Location"
           captionContainerStyles={{ backgroundColor: theme.card }}
+          errorMessage={errors.location ? errors.location : ''}
         />
-        <RenderTaggedInput
-        maxLength={5}
-          onBlur={()=>setFocus('')}
-          onFocus={()=>setFocus('emptype')}
-          taggedInputContainerStyles={{
-            padding:5,
-          borderColor:focused == 'emptype'?'orange':'#888'
-          }}
-          value={employmentType}
-          onChangeText={(val)=>setEmploymentType(val)}
-          placeholder="part_time"
-          caption="Employment Type"
-          captionContainerStyles={{ backgroundColor: theme.card }}
-        />
+        
+        {RenderPicker({
+            theme:theme,
+            label:"label",
+            value:'value',
+            caption:'Select Employment Type',
+            list:[
+              {label:'Full time', value:'full_time'},
+              {label: 'Part time', value:'part_time'},
+              {label:'Contract', value : 'contract'},
+              {label:'One Time', value : 'one_time'}
+            ],
+            selectedValue: employment_type, 
+            pickerAction:(val:any) => setEmployment_type(val)})}
 
-        <RenderTaggedInput
-        maxLength={5}
-          onBlur={()=>setFocus('')}
-          onFocus={()=>setFocus('reppass')}
-          taggedInputContainerStyles={{
-            padding:5,
-          borderColor:focused == 'reppass'?'orange':'#888'
-          }}
-          value={experienceLevel}
-          onChangeText={setExperienceLevel}
-          placeholder="Experience Level"
-          caption="Experience Level"
-          captionContainerStyles={{ backgroundColor: theme.card }}
-        />
+          
+          {RenderPicker({
+            theme:theme,
+            label:"label",
+            value:'value',
+            caption:'Select Required Experience',
+            list:[ 
+              {label:'Entry Level', value:'entry_level'},
+              {label: 'Mid Level', value:'mid_level'},
+              {label:'Senior', value : 'senior'}
+            ],
+            selectedValue: experience_level, 
+            pickerAction:(val:any) => setExperience_level(val)})}
+       
        
         <RenderTaggedInput
           maxLength={25}
           onBlur={()=>setFocus('')}
-          onFocus={()=>setFocus('reppass')}
+          onFocus={()=>setFocus('sal')}
           taggedInputContainerStyles={{
             padding:5,
-          borderColor:focused == 'reppass'?'orange':'#888'
+          borderColor:focused == 'sal'?'orange':'#888'
           }}
-          value={salaryRange}
-          onChangeText={(val)=>setSalaryRange(val)}
+          value={salary_range}
+          onChangeText={(val)=>setSalary_range(val)}
           placeholder="ex Ksh 2000-3000 per/day"
           caption="Salary"
           captionContainerStyles={{ backgroundColor: theme.card }}
+          errorMessage={errors.salary_range ? errors.salary_range : '' }
         />
-      
+        
+        {RenderButtonRow({
+              buttonStyles:[globalstyles.row,{alignSelf:'center',
+                borderWidth:1,borderColor:'green',
+                padding:20,marginVertical:10,gap:10}],
+              action:() => setOpenDate(!openDate),
+              button_text: `Deadline date ${deadline_date? formatDate(deadline_date):''}`,
+              Icon:MaterialIcons,
+              buttonTextStyles:[{color:theme.text,fontSize:16,fontWeight:'600'}],
+              icon_name:"date-range",
+              icon_color:"green"
+        })}
+
+        {openDate && (
+              <DateTimePicker
+                value={deadline_date}
+                mode="date"
+                is24Hour={true}
+                onChange={(event, date:any) => {
+                  setOpenDate(false);
+                    setDeadlineDate(date)
+                     
+                }}
+              />
+        )}
+
+      </View>
+
       <TouchableOpacity
           onPress={handleSubmit}
           style={[ globalstyles.columnCenter,
             {
-              backgroundColor: "#b35900",
+              backgroundColor: "rgb(0,105,0)",
               width: "80%",
               alignSelf: "center",
               marginVertical:12,
@@ -147,7 +321,7 @@ const JobPostCreateScreen = () => {
           <Text 
           style={[{color:'white',paddingVertical:5,textAlign:'center',fontWeight:'500'}]}>Create Post</Text>
         </TouchableOpacity>
-      </View>
+
       <Toast
           visible={openModal}
           status={modalStatus}

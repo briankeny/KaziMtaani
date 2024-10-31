@@ -1,29 +1,76 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { router } from 'expo-router';
-import { SafeAreaView, ScrollView, View,Text,TouchableOpacity,Image } from 'react-native';
+import BottomSheet from "@gorhom/bottom-sheet";
+import BottomSheetDrawer from '@/kazisrc/components/BottomSheetDrawer';
+import { SafeAreaView, ScrollView, View,Text,TouchableOpacity,Image, FlatList, RefreshControl } from 'react-native';
 import { useSelector } from 'react-redux';
-import { useGetResourceMutation } from '@/kazisrc/store/services/authApi';
+import { useDeleteResourceMutation, useGetResourceMutation } from '@/kazisrc/store/services/authApi';
 import { setConvo, setConvos } from '@/kazisrc/store/slices/messageSlice';
 import { useAppDispatch } from '@/kazisrc/store/store';
 import { globalstyles } from '@/kazisrc/styles/styles';
 import { dateFormater} from '@/kazisrc/utils/utils';
+import { clearModal, rendermodal } from '@/kazisrc/store/slices/modalSlice';
+import Toast from '@/kazisrc/components/Toast';
+import { RenderButtonRow } from '@/kazisrc/components/Buttons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 
 const ConversationsScreen = () => {
     const dispatch = useAppDispatch();
-    const swipeableRowRef = useRef<any>(null)
-    const { theme, isNightMode } = useSelector((state: any) => state.theme);
+    const { theme} = useSelector((state: any) => state.theme);
     const {userData}  = useSelector((state:any)=> state.auth)
+    const [refreshing, setRefreshing] = React.useState(false);
+    const onRefresh = React.useCallback(() => {
+      setRefreshing(true);
+      setTimeout(() => {
+        setRefreshing(false);
+        router.replace("/(app)/(messages)");
+      }, 2000);
+    }, [router]);
     
-    // const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
-    //   (state: any) => state.modal
-    // ); 
-
+    const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
+      (state: any) => state.modal
+    ); 
     const {conversations} = useSelector((state:any)=>state.messages) 
     const [getUserData, { data, isLoading, isError, error, isSuccess }] = useGetResourceMutation();
+    const [deleteData, { isLoading: delLoading }] = useDeleteResourceMutation();
 
+    const [convoId, setConvoId] = useState<number | any>(null)
+
+    const bottomSheetRef = useRef<BottomSheet>(null);
+    const [openBottomSheetDrawer, setOpenBottomSheetDrawer] = useState(false);
+    const snapPoints = useMemo(() => [ "10%", "25%", "50%"], []);
+
+    function closeModal() {
+      dispatch(clearModal());
+      return true;
+    }
+
+    async function deleteConversation() {
+      if (!delLoading) {
+        try {
+          const resp = await deleteData({
+            endpoint: `/messages/${convoId}/`,
+          }).unwrap();
+          if (resp) {
+            rendermodal({
+              dispatch: dispatch,
+              header: "Success!",
+              status: "success",
+              content: "Conversation has been removed!",
+            });
+          }
+        } catch (error: any) {
+          rendermodal({
+            dispatch: dispatch,
+            header: "Error!",
+            status: "error",
+            content: error.message,
+          });
+        }
+      }
+    }
    
-
     async function fetchMessages() {
       try{
          await getUserData({endpoint:'/chats/'})
@@ -32,14 +79,6 @@ const ConversationsScreen = () => {
       }
     }
 
-
-    function deleteConvo(id:any){
-
-    }
-
-    function archiveConvo(id:any){
-
-    }
 
     function goToScreen(item:any){
       dispatch(setConvo(item))
@@ -54,6 +93,17 @@ const ConversationsScreen = () => {
       isSuccess && dispatch(setConvos(data.results)) 
     },[isSuccess])
 
+    useEffect(()=>{
+      if(isError){
+       rendermodal({
+        dispatch: dispatch,
+        header: "Error!",
+        status: "error",
+        content: 'Oops! we could not fetch your messages at the moment',
+      }) 
+      }
+    },[isError])
+
     function ConversationRow({ item,handleRowPress,participant,time,date}:any){
      return(   
        <TouchableOpacity style={[
@@ -62,7 +112,9 @@ const ConversationsScreen = () => {
           backgroundColor:theme.card,
           elevation:2,
           margin:1
-       }]} onPress={handleRowPress}>
+       }]}
+       onLongPress={()=>{setConvoId(item.chat_id) ; setOpenBottomSheetDrawer(true)}}
+       onPress={handleRowPress}>
            
         <View style={[
           globalstyles.columnCenter,
@@ -118,36 +170,85 @@ const ConversationsScreen = () => {
     return (
     <SafeAreaView
       style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
-        <ScrollView>
           {
+
+
             conversations.length > 0? 
 
-            conversations.map((convo:any,index:number)=>{
-              const  {dat,time} = dateFormater(convo.timestamp)
-              const users = convo?.participants?.length > 0 ? convo.participants : []
-              const participant:{} = users.find((item:any)=>item.user_id != userData.user_id )
+            <FlatList
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+              showsVerticalScrollIndicator={false}
+              keyExtractor={(item,index)=>index.toString()}
+              data={conversations}
+              renderItem={
+                ({item,index})=>{
+                  const  {dat,time} = dateFormater(item.timestamp)
+                  const users = item?.participants?.length > 0 ? item.participants : []
+                  const participant:{} = users.find((i:any)=>i.user_id != userData.user_id )
+                  return(
 
-                return(
                 <ConversationRow 
-                  key={index}
-                  item ={convo} 
-                  date = {dat}
-                  handleRowPress = {()=>goToScreen(convo)} 
-                  theme = {theme}
-                  participant = {participant} 
-                  time = {time} 
-                />
-         
-            )})
-          
+                key={index}
+                item ={item} 
+                date = {dat}
+                handleRowPress = {()=>goToScreen(item)} 
+                theme = {theme}
+                participant = {participant} 
+                time = {time} 
+              />
+
+                  )
+                }
+              }
+            
+            />  
             :
-            <View style={[globalstyles.columnCenter,{height:'100%'}]}>
+            <ScrollView    
+          
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            showsVerticalScrollIndicator={false}>
+            <View style={[globalstyles.columnCenter,{height:'100%',paddingTop:'50%'}]}>
                 <Text style={{color:theme.text}}>You have 0 messages</Text>
             </View>
+            </ScrollView>
+      
             
-
           }
-        </ScrollView>
+
+{openBottomSheetDrawer &&
+      <BottomSheetDrawer
+      index={openBottomSheetDrawer?1:-1}
+      snapPoints={snapPoints}
+      handleClose={()=>setOpenBottomSheetDrawer(false)}
+      bottomSheetRef={bottomSheetRef}
+      >
+        <View style={{padding:20}}>
+        <RenderButtonRow 
+      Icon={MaterialIcons}
+      icon_color="red"
+      icon_name="delete"
+      icon_size={24}
+      action={deleteConversation}
+      buttonTextStyles={{color:theme.text,fontWeight:'400',fontSize:18}}
+      button_text="Delete conversation"
+      buttonStyles={[globalstyles.row,{padding:20,gap:10}]}/>
+        </View>
+       </BottomSheetDrawer>
+}
+
+
+
+          <Toast
+          visible={openModal}
+          status={modalStatus}
+          onPress={() => closeModal()}
+          modalHeader={modalHeader}
+          modalContent={modalContent}
+        />
     </SafeAreaView>
   )
 }

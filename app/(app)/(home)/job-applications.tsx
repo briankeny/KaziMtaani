@@ -22,7 +22,7 @@ export default function JobApplicationsScreen() {
   const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
     (state: any) => state.modal
   );
-  const { jobapplications } = useSelector((state: any) => state.messages);
+  const { jobapplications } = useSelector((state: any) => state.jobs);
   const [getData, { data, isLoading, isError, error, isSuccess }] =
     useGetResourceMutation();
 
@@ -47,7 +47,7 @@ export default function JobApplicationsScreen() {
     <SafeAreaView
       style={[globalstyles.safeArea, { backgroundColor: theme.background }]}
     >
-      {jobapplications.length > 0 ?
+      { jobapplications && jobapplications.length > 0 ?
       <FlatList
         keyExtractor={(item) => item.advert_id.toString()}
         data={jobapplications}

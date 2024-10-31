@@ -10,7 +10,7 @@ import { SafeAreaView, ScrollView, TouchableOpacity,Text, Image, View } from 're
 import { useSelector } from 'react-redux';
 
 
-export function ChatScreen () {
+export default function ChatScreen () {
   const dispatch = useAppDispatch();
   const {conversation,messages} = useSelector((state:any)=>state.messages)
   const {userData} = useSelector((state:any)=>state.auth)
@@ -125,12 +125,13 @@ export function ChatScreen () {
     }
   }
 
-  useEffect(()=>{
-    chat_id && fetchMessages(chat_id)
-  },[chat_id])
+
 
   useEffect(()=>{
-    chat_id &&  filterMessages(chat_id)
+    if(chat_id){
+      fetchMessages(chat_id)
+      filterMessages(chat_id)
+    }
   },[chat_id])
 
   useEffect(()=>{
@@ -194,7 +195,7 @@ export function ChatScreen () {
     style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
         <ScrollView>
           
-          {
+          { messages &&
             messages.length > 0 ? 
             messages.map((item:any,index:number)=>{
               const {dat, time} = dateFormater(item.timestamp)

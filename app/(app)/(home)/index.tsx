@@ -1,8 +1,12 @@
 import BottomSheetDrawer from "@/kazisrc/components/BottomSheetDrawer";
 import { RenderButtonRow } from "@/kazisrc/components/Buttons";
+import { HelloWave } from "@/kazisrc/components/HelloWave";
 import MapMarker from "@/kazisrc/components/MapMarker";
 import MapViewer from "@/kazisrc/components/MapViewer";
+import { jobMarker, userMarker } from "@/kazisrc/images/images";
 import { useGetResourceMutation } from "@/kazisrc/store/services/authApi";
+import { setJobPosts } from "@/kazisrc/store/slices/jobsSlice";
+import { useAppDispatch } from "@/kazisrc/store/store";
 import { globalstyles } from "@/kazisrc/styles/styles";
 import { dateFormater } from "@/kazisrc/utils/utils";
 import {
@@ -13,7 +17,7 @@ import {
 } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   TouchableOpacity,
   View,
@@ -28,20 +32,33 @@ import {
 import { useSelector } from "react-redux";
 
 export default function HomeScreen() {
+  const dispatch = useAppDispatch()
   const { theme, isNightMode } = useSelector((state: any) => state.theme);
+  const {jobposts} = useSelector((state:any)=>state.jobs);
   const { userData, authentication } = useSelector((state: any) => state.auth);
   const [analytics, setAnalytics] = useState<any | null>(null);
-
-  const [getData, { data, isLoading, isError, error, isSuccess }] =
+  const [getData, { isLoading:getLoading, isError:existsGetError, error:getError, isSuccess:getSuccess }] =
     useGetResourceMutation();
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [openBottomSheetDrawer, setOpenBottomSheetDrawer] = useState(false);
   const snapPoints = useMemo(() => ["25%", "50%", "75%", "100%"], []);
+  const [getJobsData, {isLoading, isError, error, isSuccess }] = useGetResourceMutation({fixedCacheKey:'my-jobs'});
 
-  async function setchDataAnlytics() {
+  async function fetchJobs() {
+      try {
+        const resp = await getData({ endpoint: "/job-posts/" }).unwrap();
+        if (resp) {
+          const data = resp.results ? resp.results : [];
+          dispatch(setJobPosts(data));
+        }
+      } catch (error: any) {}
+  }
+
+
+  async function fetchDataAnalytics() {
     try {
-      const resp = await getData({ endpoint: "/analytics/" }).unwrap();
+      const resp = await getJobsData({ endpoint: "/analytics/" }).unwrap();
       if (resp) {
         resp.data && setAnalytics(resp.data);
       }
@@ -52,9 +69,12 @@ export default function HomeScreen() {
     console.log("Clicked");
   }
 
-  function goToScreen(screen: any) {
-    router.replace(screen);
-  }
+  useEffect(()=>{
+    fetchJobs()
+    fetchDataAnalytics()
+
+  },[])
+
 
   const Menu = ({
     Icon,
@@ -118,7 +138,29 @@ export default function HomeScreen() {
             globalstyles.columnStart,
             { paddingHorizontal: 20, paddingVertical: 4 },
           ]}
-        >
+        >       
+        <View style={[globalstyles.row,{
+          gap:10
+          }]}>
+              <Text  
+              
+              style={[{
+                color: theme.text,
+                fontSize:18,
+                fontFamily:'Poppins-Bold',
+            
+              }]}>
+              Hi  {userData?.full_name ? userData.full_name.slice(0,18):''}
+              </Text>    
+              <HelloWave
+                 helloStyle = {{paddingHorizontal:1}}
+                 helloStyleText = { {
+                  fontSize: 15,
+                  lineHeight:18,
+                }}
+              />     
+          </View>
+    
           <Text
             style={{
               color: "green",
@@ -264,6 +306,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        { jobposts && jobposts.length > 0 &&
         <View
           style={[
             globalstyles.rowWide,
@@ -276,20 +319,21 @@ export default function HomeScreen() {
               : "Recommendations"}
           </Text>
 
-          <Pressable>
+          <Pressable onPress={()=> userData.account_type == 'recruiter' ? router.push('/(app)/(home)/job-post-admin') : router.push('/(app)/(home)/job-applications')}>
             <Text
-              style={{ color: theme.text, fontSize: 18, fontWeight: "500" }}
+              style={{ color:'#777', fontSize: 18, fontWeight: "500" }}
             >
               More...
             </Text>
           </Pressable>
         </View>
+        }
 
         <FlatList
           horizontal={true}
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item, index) => index.toString()}
-          data={[]}
+          data={jobposts}
           renderItem={({ item, index }: { item: any; index: number }) => {
             const { dat, time } = dateFormater(item?.date_posted);
             return (
@@ -332,9 +376,9 @@ export default function HomeScreen() {
                         style={[
                           globalstyles.columnCenter,
                           {
-                            width: 30,
-                            height: 30,
-                            borderRadius: 15,
+                            width: 50,
+                            height: 50,
+                            borderRadius: 25,
                             overflow: "hidden",
                             backgroundColor: "rgb(255,123,23)",
                           },
@@ -372,7 +416,7 @@ export default function HomeScreen() {
                       numberOfLines={1}
                       style={{ fontWeight: "500", fontSize: 13, color: "#888" }}
                     >
-                      {item?.recruiter?.username ? item.recruiter.username : ''}
+                      @{item?.recruiter?.username ? item.recruiter.username : ''}
                     </Text>
                   </View>
 
@@ -385,7 +429,7 @@ export default function HomeScreen() {
                       position: "absolute",
                     }}
                   >
-                    {dat} {time}
+                    {dat} {' '} {time}
                   </Text>
                 </View>
 
@@ -438,7 +482,7 @@ export default function HomeScreen() {
         />
 
         <Pressable
-          onPress={() => router.replace("/(app)/(home)/job-post-create")}
+          onPress={() => router.push("/(app)/(home)/job-post-create")}
           style={[
             globalstyles.row,
             {
@@ -487,6 +531,7 @@ export default function HomeScreen() {
             {testdata.map((item: any, index: number) => (
               <MapMarker
                 key={index}
+                mapIcon={userData.account_type == 'recruiter' ? userMarker : jobMarker}
                 location={item.location}
                 title={item.name}
                 description="My Beatufiul"

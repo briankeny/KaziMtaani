@@ -131,11 +131,11 @@ export default function EditAccountScreen() {
           marginVertical: 10,
           overflow: "hidden",
           borderRadius: 100,
-          backgroundColor: "orange",
+          backgroundColor: "#b35900",
           alignSelf: "center",
         }}
       >
-        {" "}
+      
         {profile_pic ? (
           <Image
             style={{
@@ -147,19 +147,20 @@ export default function EditAccountScreen() {
             source={{ uri: profile_pic }}
           />
         ) : (
-          <View style={[globalstyles.columnCenter]}>
+          <View style={[globalstyles.columnCenter,{paddingTop:30}]}>
             <MaterialCommunityIcons
               name="image-plus"
-              size={24}
+              size={64}
               color={theme.text}
             />
-            <Text style={{ color: theme.text, textAlign: "center" }}>
-              Pick Image
+            <Text style={{ color: theme.text, textAlign: "center",paddingVertical:8 }}>
+              Pick passport Image
             </Text>
           </View>
         )}
       </TouchableOpacity>
 
+      {new_pic &&
       <RenderButtonRow
         Icon={MaterialCommunityIcons}
         icon_name="delete"
@@ -170,20 +171,19 @@ export default function EditAccountScreen() {
         action={clearImage}
         button_text="Remove Image"
         buttonStyles={[
-          globalstyles.rowEven,
-          {
+          globalstyles.row,
+          { alignSelf:'center',
             borderColor: "red",
             borderWidth: 1,
+            marginVertical:10,
             borderRadius: 20,
-            position: "absolute",
-            right: 10,
-            top: 20,
-            padding: 10,
+            paddingHorizontal: 10,
           },
         ]}
       />
+      }
 
-      <View style={[globalstyles.card]}>
+      <View style={[globalstyles.card,{backgroundColor:theme.card}]}>
         <TaggedInput
           onChangeText={(val: any) => setNewName(val)}
           onBlur={() => setFocus("")}
@@ -229,12 +229,14 @@ export default function EditAccountScreen() {
           placeholder="Tell us about who you are and what you do"
         />
 
-        <TouchableOpacity
+      </View>
+
+      <TouchableOpacity
           onPress={updateProfile}
           style={[
             globalstyles.columnCenter,
             {
-              backgroundColor: "#b35900",
+              backgroundColor: "rgba(0,105,0,1)",
               width: "80%",
               alignSelf: "center",
               marginVertical: 12,
@@ -255,7 +257,6 @@ export default function EditAccountScreen() {
             Update Profile
           </Text>
         </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }

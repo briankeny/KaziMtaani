@@ -1,4 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
+import { ToastAndroid } from 'react-native';
 
 interface ImageBodyConstProps {
   images:Array<any>;
@@ -131,9 +132,24 @@ export const pickImage = async () => {
   let result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ImagePicker.MediaTypeOptions.All,
     allowsEditing: true,
-    aspect: [4, 3],
+    aspect: [5,5],
     quality: 1,
   });
 
   return result
 };
+
+
+// Format date to yy-mm-dd
+export function formatDate(date:any) {
+  try {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const formated_Date = `${year}-${month}-${day}`;
+    return formated_Date;
+  } catch (err) {
+    return date;
+  }
+
+}

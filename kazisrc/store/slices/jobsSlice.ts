@@ -1,14 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-    jobposts: <Array<any> | any> [],
-    jobapplications: <Array<any> | any> [],
-    jobpost: <object | any> {},
-    favouriteJobs :<Array<any> | any> [],
-    screen:<string> '',
-    searchJSQuery : <string>  '',
-    searchJSTerm : <string | any> '',
-    searchfilters: <Array<any> | any> []
+    jobposts:  [],
+    jobapplications:  [],
+    jobpost:{},
+    favouriteJobs : <any>[],
+    screen:'',
+    searchJSQuery : '',
+    searchJSTerm : '',
+    searchfilters:  []
 }
 
 const jobsSlice = createSlice({
@@ -18,7 +18,8 @@ const jobsSlice = createSlice({
        setJobPosts:((state,action)=>{
         state.jobposts = action.payload
        }),
-       setfavouriteJobs : ((state,action)=>{
+       setFavouriteJobs : ((state,action)=>{
+
         state.favouriteJobs = action.payload
        }
        ),
@@ -42,7 +43,7 @@ const jobsSlice = createSlice({
 
 
 
-export const {setJobPost,setJobPosts,setScreen,setSearchJSQuery,setSearchJSTerm,setJobApplications,setfavouriteJobs
+export const {setJobPost,setJobPosts,setScreen,setSearchJSQuery,setSearchJSTerm,setJobApplications,setFavouriteJobs
 } = jobsSlice.actions
 
 export default jobsSlice.reducer;

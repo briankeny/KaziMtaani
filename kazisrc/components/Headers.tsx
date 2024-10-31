@@ -1,7 +1,7 @@
 import React from "react";
 import { logo } from "../images/images";
 import { globalstyles } from "../styles/styles";
-import { AntDesign, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -16,12 +16,13 @@ import {
 import { useSelector } from "react-redux";
 import { useGetResourceMutation } from "../store/services/authApi";
 import { HelloWave } from "./HelloWave";
+import { useAppDispatch } from "../store/store";
+import { setTheme } from "../store/slices/themeSlice";
 
 export function SignupHeader() {
   const steps = [
     { title: `Step 1` },
     { title: `Step 2` },
-    { title: `Step 3` },
     { title: `Final` },
   ];
   const {authscreen_index} = useSelector((state:any)=>state.auth)
@@ -75,9 +76,14 @@ export function SignupHeader() {
 }
 
 export function HomeHeader() {
-  const { theme } = useSelector((state: any) => state.theme);
+  const dispatch = useAppDispatch()
+  const { theme,isNightMode } = useSelector((state: any) => state.theme);
   const { userData } = useSelector((state: any) => state.auth);
   const { notific_count } = useSelector((state: any) => state.notifications);
+
+  const changeMode = async () => {
+    isNightMode ? dispatch(setTheme({selected:'light'})): dispatch(setTheme({selected:'dark'}))
+  }
 
   function goToScreen(screen: any) {
     router.push(screen);
@@ -95,28 +101,29 @@ export function HomeHeader() {
       ]}
     >
            
-      <View style={[globalstyles.row,{
+      <TouchableOpacity 
+      onPress={changeMode}
+      style={[globalstyles.row,{
         gap:10,
            position:'absolute',
-           left:10, 
+           left:20, 
            bottom:25
         }]}>
-            <Text  style={[{
-              color:'#777',
-              fontSize:18,
-              fontFamily:'Poppins-Bold',
-          
-            }]}>
-            Hi  
-            </Text>    
-            <HelloWave
-               helloStyle = {{paddingHorizontal:1}}
-               helloStyleText = { {
-                fontSize: 15,
-                lineHeight:18,
-              }}
-            />     
-        </View>
+            {isNightMode ? 
+            
+                  <MaterialIcons
+                    name="nightlight-round"
+                    size={30}
+                    color={theme.text}
+                  />:
+                  <Entypo
+                  name="light-down"
+                  color={theme.text} 
+                  size={30} 
+                  />
+                
+                }
+        </TouchableOpacity>
 
 
      
@@ -233,7 +240,7 @@ export function SearchHeader({
   searchQuery,
   setSearchQuery,
 }: any) {
-  const { theme } = useSelector((state: any) => state.theme);
+  const { theme,isNightMode } = useSelector((state: any) => state.theme);
   const [focused, setFocus] = useState<string>("");
 
   const [getData, { isLoading }] = useGetResourceMutation({
@@ -249,24 +256,32 @@ export function SearchHeader({
   }
 
   return (
+    <SafeAreaView style={{ 
+      paddingTop: StatusBar.currentHeight,
+      // height: 100,
+      backgroundColor:theme.card,
+      overflow:'hidden',
+    }}>
+
     <View
       style={[
         globalstyles.row,
         {
           width: "80%",
           height: 40,
-          backgroundColor: "rgba(255,255,255,0.1)",
+          alignSelf:'center',
+          marginVertical:20,
+          backgroundColor: isNightMode ? "rgba(255,255,255,0.1)" : 'rgba(0,0,0,0.05)',
           borderRadius: 30,
-          paddingHorizontal: 20,
+          paddingHorizontal:20,
         },
       ]}
     >
       <TextInput
         style={[
           {
-            width: "80%",
-            paddingLeft: 20,
-            height: 33,
+            width: "90%",
+            height: 40,
           },
           focused == "srch" && { borderWidth: 0.1, borderBottomColor: "green" },
         ]}
@@ -280,10 +295,34 @@ export function SearchHeader({
 
       <TouchableOpacity
         onPress={searchFunction}
-        style={[{ width: 30, height: 40, padding: 5 }]}
+        style={[{ width:40, height: 40, paddingTop:10,paddingLeft:5 }]}
       >
-        <Ionicons name="search" size={24} color={theme.text} />
+        <Ionicons name="search" size={21} color={theme.text} />
       </TouchableOpacity>
+
     </View>
+
+    </SafeAreaView>
   );
 }
+
+
+// export function JobProfileHeader(){
+//   return(
+//     <View style={[globalstyles.rowEven]}>
+//         <AntDesign name="back" size={24} color="black" />
+//         <Text
+//         style={{color:'#fff',fontSize:21,fontWeight:'500',textAlign:'center'}}
+//         ellipsizeMode='tail'
+//         numberOfLines={1}
+//         >
+//           {jobpost?.recruiter?.full_name}
+//         </Text>
+
+//         <Pressable onPress={toggleFavJobs}>
+//           <FontAwesome name={ isFavourite? "heart" :"heart-o"} size={24} color="red" />
+//         </Pressable>
+        
+//       </View>
+//   )
+// }

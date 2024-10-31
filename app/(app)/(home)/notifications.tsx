@@ -21,11 +21,11 @@ import { useSelector } from "react-redux";
 import NotFound from "@/kazisrc/components/NotFound";
 import {
   useGetResourceMutation,
-  usePostResourceMutation,
   useDeleteResourceMutation,
+  usePatchResourceMutation,
 } from "@/kazisrc/store/services/authApi";
 import { logo } from "@/kazisrc/images/images";
-import { Entypo, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
 import { setNotifications } from "@/kazisrc/store/slices/notificationSlice";
 import { RenderButtonRow } from "@/kazisrc/components/Buttons";
 import Toast from "@/kazisrc/components/Toast";
@@ -46,11 +46,11 @@ const NotificationsScreen = () => {
       isSuccess: getSuccess,
     },
   ] = useGetResourceMutation();
-  const [postData, { isLoading, isError, error }] = usePostResourceMutation();
+  const [patchData, { isLoading, isError, error }] = usePatchResourceMutation();
   const [deleteData, { isLoading: delLoading }] = useDeleteResourceMutation();
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const [openBottomSheetDrawer, setOpenBottomSheetDrawer] = useState(true);
-  const snapPoints = useMemo(() => ["25%", "50%", "75%"], []);
+  const [openBottomSheetDrawer, setOpenBottomSheetDrawer] = useState(false);
+  const snapPoints = useMemo(() => [ "10%", "25%", "50%"], []);
   const [notification ,setNotification] = useState<any | object>({})
   const [refreshing, setRefreshing] = React.useState(false);
   const onRefresh = React.useCallback(() => {
@@ -120,9 +120,9 @@ const NotificationsScreen = () => {
   } 
 
 
-  // useEffect(()=>{
-  //   fetchNotifications()
-  // },[])
+  useEffect(()=>{
+    fetchNotifications()
+  },[])
 
   //   useEffect(()=>{
   //     if(isError){
@@ -139,10 +139,13 @@ const NotificationsScreen = () => {
     return ( 
     <View style={[globalstyles.card,{backgroundColor:theme.card}]}>
       <RenderButtonRow 
+      Icon={AntDesign}
+      icon_color={theme.text}
+      icon_name={ notification.read_status? 'star':'staro'}
       action={()=>deleteNotification(notification.notification_id)}
-      buttonTextStyles={{color:theme.text}}
-      button_text="Mark notification as read"
-      buttonStyles={[globalstyles.row,{padding:20}]}/>
+      buttonTextStyles={{color:theme.text,fontWeight:'400',fontSize:18}}
+      button_text={notification.read_status ? 'UnMark as Read': 'Mark as Read'}
+      buttonStyles={[globalstyles.row,{padding:20,gap:10}]}/>
       
       <RenderButtonRow 
       Icon={MaterialIcons}
@@ -150,9 +153,9 @@ const NotificationsScreen = () => {
       icon_name="delete"
       icon_size={24}
       action={()=>deleteNotification(notification.notification_id)}
-      buttonTextStyles={{color:theme.text}}
+      buttonTextStyles={{color:theme.text,fontWeight:'400',fontSize:18}}
       button_text="Delete notification"
-      buttonStyles={{}}/>
+      buttonStyles={[globalstyles.row,{padding:20,gap:10}]}/>
      
     </View>
     )
@@ -175,10 +178,13 @@ const NotificationsScreen = () => {
           data={notifications}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item, index }) =>{
+            const { dat, time } = dateFormater(item.timestamp);
           return(
             < RenderNotification
             key = {index}  
             item = {item}
+            dat={dat}
+            time={time}
             // goToNotification: goToNotification,
             // openDialogue: opendialogue,
             theme= {theme}
@@ -236,12 +242,13 @@ export default NotificationsScreen;
 
 export function RenderNotification({
   item,
+  dat,time,
   index,
   goToNotification,
   openDialogue,
   theme,
 }: any) {
-  const { dat, time } = dateFormater(item.timestamp);
+ 
   return (
     <TouchableOpacity
       onPress={() => goToNotification(item)}

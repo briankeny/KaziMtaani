@@ -93,16 +93,7 @@ const ConversationsScreen = () => {
       isSuccess && dispatch(setConvos(data.results)) 
     },[isSuccess])
 
-    useEffect(()=>{
-      if(isError){
-       rendermodal({
-        dispatch: dispatch,
-        header: "Error!",
-        status: "error",
-        content: 'Oops! we could not fetch your messages at the moment',
-      }) 
-      }
-    },[isError])
+
 
     function ConversationRow({ item,handleRowPress,participant,time,date}:any){
      return(   

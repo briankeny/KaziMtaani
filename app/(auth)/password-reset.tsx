@@ -7,6 +7,7 @@ import { useAppDispatch, useSelector } from "@/kazisrc/store/store";
 import { globalstyles } from "@/kazisrc/styles/styles";
 import { checkStrForPurelyNumbers, validationBuilder } from "@/kazisrc/utils/validator";
 import { SafeAreaView, View, TouchableOpacity,Text } from "react-native";
+import { router } from "expo-router";
 
 const PasswordResetScreen = () => {
     const dispatch = useAppDispatch();
@@ -32,14 +33,14 @@ const PasswordResetScreen = () => {
             const rules = [{
                 mobile_number:mobile_number,
                 type:'phonenumber',
-                maxLength:8
+                maxLength:9
             }
             ]
             
             const validated = validationBuilder(rules)
-
-            if(validated){
-                await  postData({data:validated,endpoint:'/password-reset/'}).unwrap()
+            const resp = await  postData({data:validated,endpoint:'/password-reset/'}).unwrap()
+            if(resp){
+              router.push({ pathname:'/(auth)/password-reset-otp', params:validated })
             }
         }
         catch(error:any){
@@ -67,32 +68,38 @@ const PasswordResetScreen = () => {
     <SafeAreaView
       style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
         
-        <View style={[globalstyles.column]}>
-            <Text
-            style={{color:theme.text,textAlign:'center'}}
+        <Text
+            style={{color:theme.text,padding:20}}
             > 
             ** Use a phone number linked to your account.{'\n'}
-            If your phone number is 0721 or 0751 start with 721 or 751
-            </Text>
-        <View>
-
-        </View>
+            Phone number takes the following format.{'\n'}
+            If your phone number starts with 0721 or 0751 {'\n'}
+            {'\n'}
+            **Omit 0 and start with 721 or 751 
+        </Text>
+   
+          
+        <View style={[globalstyles.card,{backgroundColor:theme.card}]}>
         
         <TaggedInput
           onChangeText={(val)=>handleNumeric(val,setMobileNumber)}
           keyboardType={'numeric'}
           onBlur={()=>setFocus('')}
           onFocus={()=>setFocus('mobile_number')}
-          maxLength={6}
+          maxLength={11}
           taggedInputContainerStyles={{
             padding:5,
             marginVertical:35,
             borderColor:focused == 'mobile_number'?'orange':'#888'}}
           value={mobile_number}
-          errorMessage={errors.mobile_number? errors.mobile_number.message : ''}
+         
+          errorMessage={errors.mobile_number? errors.mobile_number : ''}
           caption='Phone Number'
           placeholder="ex +254 712 xxx xxx"
         />
+        </View>
+        
+        
             <TouchableOpacity
             onPress={sendResetLink}
             style={[ globalstyles.columnCenter,
@@ -105,9 +112,9 @@ const PasswordResetScreen = () => {
                 }
             ]}
             >
-            <Text style={[{color:'white',paddingVertical:5,textAlign:'center',fontWeight:'500'}]}>Login</Text>
+            <Text style={[{color:'white',paddingVertical:5,textAlign:'center',fontWeight:'500'}]}>
+              Send Link</Text>
             </TouchableOpacity>
-        </View>
             <Toast
             visible={openModal}
             status={modalStatus}

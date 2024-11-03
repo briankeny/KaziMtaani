@@ -1,25 +1,37 @@
-import { HomeHeader } from '@/kazisrc/components/Headers';
+import { HomeHeader, MyDrawer } from '@/kazisrc/components/Headers';
 import { useGetResourceMutation } from '@/kazisrc/store/services/authApi';
 import { setNewNotifications } from '@/kazisrc/store/slices/notificationSlice';
 import { useAppDispatch, useSelector } from '@/kazisrc/store/store';
-import { Stack } from 'expo-router'
+import { Drawer } from 'expo-router/drawer'
 import React, { useEffect } from 'react'
+import { Redirect  } from 'expo-router';
+import { setOnlineStatus } from '@/kazisrc/store/slices/authSlice';
 
-const HomeStacklayout = () => {
+const HomeDrawerlayout = () => {
   const dispatch = useAppDispatch()
   const { theme } = useSelector((state: any) => state.theme);
+  const {authentication}  = useSelector((state:any)=>state.auth)
   const [getData, { isLoading,isError,error,isSuccess}] = useGetResourceMutation();
   // const { userData,authentication } = useSelector((state: any) => state.auth);
 
   async function fetchNewNotifications(){
     try{
       const resp =  await getData({endpoint:`/notifications/?search=False&searchTerm=read_status`}).unwrap()
-      const data = resp?.count ? resp.count : 0
+      if(resp){
+      dispatch(setOnlineStatus(true))
+        const data = resp?.count ? resp.count : 0
       dispatch(setNewNotifications(data))
+      }
     }
     catch(error){
     }
   } 
+
+    
+  useEffect(()=>{
+    !authentication && <Redirect href="/(auth)"/>
+  },[authentication])
+   
 
 
   useEffect(()=>{
@@ -27,9 +39,9 @@ const HomeStacklayout = () => {
   },[])
 
   return (
-   <Stack screenOptions={{
+   <Drawer 
+   screenOptions={{
     headerShown:true,
-
     headerStyle:{
       backgroundColor:theme.card
     },
@@ -37,20 +49,25 @@ const HomeStacklayout = () => {
       color: theme.text,
       fontSize: 21
     },
+    headerTintColor:theme.text,
     headerTitleAlign:'center'
-
-   }}>
-        <Stack.Screen 
+   }}
+   
+   drawerContent={(props:any)=> <MyDrawer {...props}/>}
+   >
+        <Drawer.Screen 
         options={{
-          header: () => <HomeHeader />,
+          
+          header: (props:any) => <HomeHeader {...props} />,
+          
         }}
         name='index'/>
-        <Stack.Screen options={{title:'Notifications'}} name='notifications'/>
-        <Stack.Screen options={{title:'My Applications'}} name='job-applications'/>
-        <Stack.Screen options={{title:'My Job Post'}} name='job-post-admin'/>
-        <Stack.Screen options={{title:'Create Job Post'}} name='job-post-create'/>
-   </Stack>
+        <Drawer.Screen options={{title:'Notifications'}} name='notifications'/>
+        <Drawer.Screen options={{title:'My Applications'}} name='job-applications'/>
+        <Drawer.Screen options={{title:'My Job Post'}} name='job-post-admin'/>
+        <Drawer.Screen options={{title:'Create Job Post'}} name='job-post-create'/>
+   </Drawer>
   )
 }
 
-export default HomeStacklayout
+export default HomeDrawerlayout

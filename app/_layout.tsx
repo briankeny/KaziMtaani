@@ -1,14 +1,12 @@
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import React from "react";
 import { ThemeProvider } from "@react-navigation/native";
-import { SplashScreen, Slot, Stack } from "expo-router";
+import { SplashScreen, Stack} from "expo-router";
 import { useEffect, useState } from "react";
 import * as Font from 'expo-font';
-import { SignupHeader } from "@/kazisrc/components/Headers";
 import { colorslight } from "@/kazisrc/store/slices/themeSlice";
 import { store } from "@/kazisrc/store/store";
 import { Provider } from "react-redux";
-
 
 SplashScreen.preventAutoHideAsync()
 export default function RootLayout() {
@@ -23,6 +21,8 @@ export default function RootLayout() {
       'Poppins-Regular': require('../assets/fonts/Poppins-Regular.ttf'),
       'Poppins-Thin': require('../assets/fonts/Poppins-Thin.ttf'),
       'SpaceMono-Regular': require('../assets/fonts/SpaceMono-Regular.ttf'),
+      'Nunito-Bold': require('../assets/fonts/Nunito-Bold.ttf'),
+      'Nunito-Medium': require('../assets/fonts/Nunito-Medium.ttf'),
       // path to your font file
     });
     setFontsLoaded(true);
@@ -47,29 +47,14 @@ export default function RootLayout() {
         }}
       >
          <Stack screenOptions={{
-        headerShown:true,
+        headerShown:false
         }}>
-           <Stack.Screen options={{headerShown:false}} name="index" />
-            <Stack.Screen options={{headerShown:false}} name="signin" />
-            <Stack.Screen 
-            options={{title:'Password Reset'}}
-            name="password-reset" />
-            <Stack.Screen 
-            options={{ header:()=> <SignupHeader/>}}
-            name="signup-phone-auth" />
-            <Stack.Screen 
-            options={{ header:()=> <SignupHeader/>}}
-            name="signup-otp-verify" />
-            <Stack.Screen
-            options={{ header:()=> <SignupHeader/>}}
-            name="signup-account-setup" />
-             <Stack.Screen options={{headerShown:false}} name="(app)" />
-
+            <Stack.Screen options={{headerShown:false}} name="index" />
+            <Stack.Screen options={{headerShown:false}} name="(auth)" />
+            <Stack.Screen options={{headerShown:false}} name="(app)" />
           </Stack>
       </ThemeProvider>
     </Provider>
     </GestureHandlerRootView>
   );
 }
-
-

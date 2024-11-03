@@ -1,4 +1,5 @@
 import { TaggedInput } from '@/kazisrc/components/Inputs';
+import RenderPicker from '@/kazisrc/components/RenderPicker';
 import Toast from '@/kazisrc/components/Toast';
 import { usePostNoAuthMutation } from '@/kazisrc/store/services/authApi';
 import { setAuthScreenIndex } from '@/kazisrc/store/slices/authSlice';
@@ -26,7 +27,7 @@ const SignUpScreen = () => {
   const {theme, isNightMode} = useSelector((state:any)=>state.theme)
   const [full_name, setFullName] = useState<string>('');
   const [email, setEmail] = useState<string>('')
-  const [account_type, setAccountType] = useState<string>('jobseeker');
+  const [account_type, setAccountType] = useState<string>('');
   const [industry,setIndustry] = useState<string>('')
   const [password, setPassword] = useState<string>('');
   const [repeat_password, setRepeatPassword] = useState<string>('');
@@ -66,11 +67,7 @@ const SignUpScreen = () => {
           type:'email',
           canBeEmpty:true
         },
-        {
-          account_type: account_type,
-          minlength:4,
-          type:'string'
-        },
+      
         {
           password: password,
           minlength:9,
@@ -85,7 +82,7 @@ const SignUpScreen = () => {
 
       rules.push(JSON.parse(mobile))
       rules.push(JSON.parse(otp))
-
+    
        if (repeat_password != password){
         const err = {
           repeat_password:'Passwords Must Match'
@@ -95,6 +92,7 @@ const SignUpScreen = () => {
         const validated:any = validationBuilder(rules)
         const username = generateRandomUserName(full_name)
         validated['username'] = username
+        account_type ? validated['account_type'] = account_type : validated['account_type'] = 'jobseeker'
         const response = await postData({data:validated,endpoint:'/user-registration/'}).unwrap()
         if (response){
            //  Create a notification
@@ -106,7 +104,7 @@ const SignUpScreen = () => {
           })
           
           // Function to navigate to sign in page
-          router.replace('/signin')
+          router.replace('/(auth)/')
         } 
       } 
       catch (error:any) {
@@ -116,55 +114,6 @@ const SignUpScreen = () => {
     }
   }
 
-
-  function ChooseAccountType(){
-     const  accountOptions = [ 
-      {
-        title:'Job Seeker',
-        value:'jobseeker'
-     }, 
-     {
-      title:'Hiring',
-      value:'recruiter'
-    }]
-    return (
-      <View style={[globalstyles.card,{
-        position:'absolute',top:70,
-        right:2,
-        zIndex:1,width:130,height:100,
-        backgroundColor: theme.card}]}>
-          {
-            accountOptions.map((item,index)=>
-              <Pressable 
-              style={[{marginVertical:4,
-                borderWidth: 1,
-                padding:2,
-                borderColor: theme.text,
-                borderRadius:10},
-                item.value === account_type &&
-                {
-                  backgroundColor: 'green'}
-              ]}
-              onPress={()=>{
-                setOpenDD(!openDD);
-                setAccountType(item.value)}
-                } key={index}>
-                <Text 
-                style={[{
-                  textAlign:'center',
-                  fontWeight:'500',
-                },item.value === account_type &&
-                {
-                  color: '#fff'}
-                ]}>
-                  {item.title}
-                  </Text>
-              </Pressable>
-            )
-          }
-      </View>
-    )
-  }
 
   useEffect(()=>{
     if(isError){
@@ -188,40 +137,30 @@ const SignUpScreen = () => {
     <SafeAreaView
     style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
     <ScrollView>
-      <View style={[globalstyles.column,{flexGrow:1}]}>
+      <View style={[globalstyles.column,{flexGrow:1, backgroundColor:theme.card}]}>
           
-          <View style={{width:'80%',marginBottom:20,alignSelf:'center'}}>
+          <View style={{width:'80%',marginVertical:20,alignSelf:'center'}}>
           <Text style={{
            color:theme.text,
+           textAlign:'center',
            textTransform:'capitalize'
            }}>
-             Personal Information
+             ** Personal Information
          </Text> 
           </View>
         
-         <Pressable 
-         onPress={()=>setOpenDD(!openDD)}
-         style={[
-           globalstyles.row,
-           {width:'80%',marginBottom:20,
-           gap:10,
-           alignSelf:'center'}]}>
-             <Text style={{
-               color:theme.text,
-               textTransform:'capitalize'
-               }}>
-                 Are You Hiring or Looking For A Job?    
-             </Text> 
-             <AntDesign 
-             name= { openDD ? "caretup": "caretdown"} 
-             size={18}
-             color={'green'} 
-             />
-         </Pressable>
 
-         {openDD &&
-         <ChooseAccountType/>
-         }
+          {RenderPicker({
+            theme:theme,
+            label:"label",
+            value:'label',
+            caption:'Select Account Type',
+            list:[
+              {label:'recruiter'},
+              {label: 'jobseeker'},
+            ],
+            selectedValue: account_type, 
+            pickerAction:(val:any) => setAccountType(val)})}
 
          <TaggedInput
            onChangeText={(val:any)=> setFullName(val)}

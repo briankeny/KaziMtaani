@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, View, Text,  ScrollView, TouchableOpacity ,Image, Pressable} from 'react-native';
-import { usePostFormDataMutation } from '@/kazisrc/store/services/authApi';
+import { useGetResourceMutation, usePostFormDataMutation } from '@/kazisrc/store/services/authApi';
 import { useAppDispatch, useSelector } from '@/kazisrc/store/store';
 import { globalstyles } from '@/kazisrc/styles/styles';
 import { RenderTaggedInput } from '@/kazisrc/components/Inputs';
@@ -8,7 +8,7 @@ import { clearModal } from '@/kazisrc/store/slices/modalSlice';
 import Toast from '@/kazisrc/components/Toast';
 import RenderPicker from '@/kazisrc/components/RenderPicker';
 import { validationBuilder } from '@/kazisrc/utils/validator';
-import { formatDate, imageAndBodyConstructor, pickImage, randomKeyGenerator, removeSpace, showToastWithGravity } from '@/kazisrc/utils/utils';
+import { formatDate, imageAndBodyConstructor, pickImage, randomKeyGenerator, removeSpace} from '@/kazisrc/utils/utils';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RenderButtonRow } from '@/kazisrc/components/Buttons';
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -16,13 +16,19 @@ import { router } from 'expo-router';
 
 const JobPostCreateScreen = () => {
   const dispatch = useAppDispatch();
+  const [getData, {data}] = useGetResourceMutation();
   const [postData, { isLoading, isSuccess, error, isError }] = usePostFormDataMutation();
   const { theme, isNightMode } = useSelector((state: any) => state.theme);
   const {userData} = useSelector((state:any)=>state.auth)
   // Form state variables
   const [errors,setErrors] = useState <any>({})
   const [focused,setFocus]  = useState<string>('')
+
   const [title, setTitle] = useState<string>('');
+  
+  const  [category , setCategory] = useState<any>();
+  const  [categories ,setCategories] = useState<any>([]);
+
   const [description, setDescription] = useState<string>('');
   const [location, setLocation] = useState<string>('');
   const [employment_type, setEmployment_type] = useState<string | any>('');
@@ -37,11 +43,24 @@ const JobPostCreateScreen = () => {
   const [imageType, setImageType] = useState("png");
 
 
-  const handleMapPress = (event:any) => {
-    const { latitude, longitude } = event.nativeEvent.coordinate;
-    console.log(latitude,longitude)
+  const handleMapPress = () => {
+    // const { latitude, longitude } = event.nativeEvent.coordinate;
+    // console.log('Choose location',latitude,longitude)
     // setLocation({ latitude, longitude });
-};
+    };
+
+
+    async function fetchCategories() {
+      try{
+        const resp = await getData({endpoint:'/jobs/'}).unwrap()
+        if(resp){
+          resp.results && setCategories(resp.results)
+        }
+      }
+      catch(error:any){
+
+      }
+    }
 
     async function openImagePicker() {
       try {
@@ -139,8 +158,8 @@ const JobPostCreateScreen = () => {
   };
 
   useEffect(()=>{
-    console.log(employment_type)
-  },[employment_type])
+    fetchCategories()
+  },[])
 
   return (
     <SafeAreaView style={[globalstyles.safeArea, { backgroundColor: theme.background }]}>
@@ -200,6 +219,15 @@ const JobPostCreateScreen = () => {
           captionContainerStyles={{ backgroundColor: theme.card }}
           errorMessage={errors.title ? errors.title : ''}
         />
+        
+        {RenderPicker({
+            theme:theme,
+            label:"job_name",
+            value:'job_name',
+            caption:'Select Job Category',
+            list:categories,
+            selectedValue: category, 
+            pickerAction:(val:any) => setCategory(val)})}
 
         <RenderTaggedInput
         maxLength={200}
@@ -237,13 +265,13 @@ const JobPostCreateScreen = () => {
         {RenderPicker({
             theme:theme,
             label:"label",
-            value:'value',
+            value:'label',
             caption:'Select Employment Type',
             list:[
-              {label:'Full time', value:'full_time'},
-              {label: 'Part time', value:'part_time'},
-              {label:'Contract', value : 'contract'},
-              {label:'One Time', value : 'one_time'}
+              {label:'Full time'},
+              {label: 'Part time'},
+              {label:'Contract'},
+              {label:'One Time'}
             ],
             selectedValue: employment_type, 
             pickerAction:(val:any) => setEmployment_type(val)})}
@@ -252,12 +280,12 @@ const JobPostCreateScreen = () => {
           {RenderPicker({
             theme:theme,
             label:"label",
-            value:'value',
+            value:'label',
             caption:'Select Required Experience',
             list:[ 
-              {label:'Entry Level', value:'entry_level'},
-              {label: 'Mid Level', value:'mid_level'},
-              {label:'Senior', value : 'senior'}
+              {label:'Entry Level'},
+              {label: 'Mid Level'},
+              {label:'Senior'}
             ],
             selectedValue: experience_level, 
             pickerAction:(val:any) => setExperience_level(val)})}

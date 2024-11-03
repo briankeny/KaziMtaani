@@ -8,7 +8,7 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import { Action } from "redux";
 
 import themeReducer from  './slices/themeSlice';
-import authReducer, {setAuth, setTokens} from "./slices/authSlice";
+import authReducer, {setAuth, setOnlineStatus, setTokens} from "./slices/authSlice";
 import modalReducer, { rendermodal} from "./slices/modalSlice";
 
 import notificationsReducer from "./slices/notificationSlice";
@@ -35,7 +35,7 @@ const persistConfig = {
   key: "root",
   storage: AsyncStorage,
   // blacklist: ["_persist",authApi.reducerPath],
-  blacklist:["_persist", "authApi"],
+  blacklist: [authApi.reducerPath],
   // whitelist: [],
 };
 
@@ -52,31 +52,40 @@ export const store = configureStore({
     serializableCheck: {
       ignoredActions:[FLUSH,REHYDRATE,PAUSE,PERSIST,PURGE,REGISTER]
     }, 
+  }).concat((store:any) => (next:any) => async (action: any) => {
+    if (action.type.endsWith('rejected') && action.payload?.error?.includes("Network request failed")) {
+      store.dispatch(setOnlineStatus(false))    
+      rendermodal({
+          dispatch : store.dispatch,
+          header:'Network Error!',
+          status:'error',
+          content:'You are currently offline!'});      
+    }
+    return next(action);
   })
-  .concat(authApi.middleware)
-    .concat((store) => (next) => async (action:any) => {
-      if (
-      action.type.endsWith('rejected') && 
-      action.payload?.data?.code === 'token_not_valid' && 
-      action.payload.status === 401) {   
+  .concat((store) => (next) => async (action:any) => {
+      if (action.type.endsWith('rejected') &&  action.payload?.status === 401) {   
       try{
         const state = await store.getState() as RootState;
         const  refresh = await state['auth'].refreshToken;
+        console.log('Middleware executing',action)
+         console.log('refresh',refresh)
         const data = await try_re_auth_procedure(refresh)
-        data &&  store.dispatch(setTokens(data))
+        data && store.dispatch(setTokens(data))
       }
       catch(error:any){
+        console.log('Found authentication error',error)
         store.dispatch(setTokens({refresh:null,access:null}));
+        store.dispatch(setAuth(false))
         rendermodal({
           dispatch : store.dispatch,
           header:'Authentication Error!',
           status:'error',
           content:'Your login session has expired please login again to continue!'});
-        store.dispatch(setAuth(false))
       }
       }
       return next(action);
-    }),
+    })
 });
 
 setupListeners(store.dispatch)
@@ -93,10 +102,13 @@ export const useAppDispatch: () => AppDispatch = useDispatch
 export const useSelector : TypedUseSelectorHook <RootState> = useReduxSelector
 
 export async  function try_re_auth_procedure(refreshToken:any){
-  let json = <any> {}
   try {
-    const resp = await getAccessToken(refreshToken)
-    
+    const data =  {"refresh": refreshToken }
+    let json = <any> {}  
+    const resp = await axios.post(`${baseUrl}/token/refresh/`,data,{
+      headers:{
+        'Content-Type':'Application/json'
+      }})
     if ( !(resp.status == undefined) &&( resp.status == 201 || resp.status == 200)){
         json['refresh'] = refreshToken
         json['access'] = resp?.data?.access
@@ -107,23 +119,5 @@ export async  function try_re_auth_procedure(refreshToken:any){
     }
     }
     catch (error:any){
-      throw new error (error.message)
     }
-}
-
-
-export async function getAccessToken (refreshToken:any) {
-  try {
-  const data =  {"refresh": refreshToken }
-  const resp = await axios.post(`${baseUrl}/token/refresh/`,data,{
-    headers:{
-      'Content-Type':'Application/json'
-    }
-  })
-  
-  return resp
-  }
-  catch(error:any){
-    throw new Error(error.message)
-  }
 }

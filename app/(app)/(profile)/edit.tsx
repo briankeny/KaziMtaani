@@ -1,7 +1,8 @@
 import { RenderButtonRow } from "@/kazisrc/components/Buttons";
 import { TaggedInput } from "@/kazisrc/components/Inputs";
 import { usePatchFormDataMutation } from "@/kazisrc/store/services/authApi";
-import { setUser } from "@/kazisrc/store/slices/authSlice";
+import { setLocation, setUser } from "@/kazisrc/store/slices/authSlice";
+import { rendermodal } from "@/kazisrc/store/slices/modalSlice";
 import { useAppDispatch } from "@/kazisrc/store/store";
 import { globalstyles } from "@/kazisrc/styles/styles";
 import {
@@ -20,6 +21,8 @@ import {
   Image,
   TouchableOpacity,
   Text,
+  ScrollView,
+  RefreshControl,
 } from "react-native";
 import { useSelector } from "react-redux";
 
@@ -28,24 +31,37 @@ export default function EditAccountScreen() {
   const { theme, isNightMode } = useSelector((state: any) => state.theme);
   const { userData } = useSelector((state: any) => state.auth);
 
-  const [patchData, {}] = usePatchFormDataMutation();
+  const [patchData, {isLoading,isSuccess,isError,error}] = usePatchFormDataMutation();
 
-  const { bio, profile_picture, user_id, full_name, username } = userData;
+  const { bio, profile_picture, user_id, full_name, username,industry,location } = userData;
 
   const [new_name, setNewName] = useState<string>("");
   const [user_name, setUserName] = useState<string>("");
+  const [new_industry,setIndustry] = useState<string>("")
   const [new_bio, setBio] = useState<string>("");
   const [profile_pic, setProfilePic] = useState<string | null>("");
   const [new_pic, setNewpic] = useState<boolean>(false);
   const [imageType, setImageType] = useState<string | any>("png");
+  const [new_location , setNewlocation] = useState <string>("");
 
   const [errors, setErros] = useState<any>({});
   const [focused, setFocus] = useState<string>("");
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      router.replace("/(app)/(home)/notifications");
+    }, 2000);
+  }, [router]);
 
   useEffect(() => {
     bio && setBio(bio);
     full_name && setNewName(full_name);
     username && setUserName(username);
+    industry && setIndustry(industry);
+    location && setNewlocation(location)
+    
   }, []);
 
   useEffect(() => {
@@ -71,6 +87,7 @@ export default function EditAccountScreen() {
   }
 
   async function updateProfile() {
+   if(!isLoading){
     try {
       const rules = [
         {
@@ -81,17 +98,20 @@ export default function EditAccountScreen() {
         {
           username: user_name,
           type: "string",
-          minLength: 3,
+          minLength: 3
+        },
+        {
+          industry:industry,
+          type:'string',
+          minLength :2
         },
         {
           bio: new_bio,
           type: "string",
-          minLength: 8,
+          minLength: 8
         },
       ];
-
       const validated = validationBuilder(rules);
-
       const images = [];
       if (new_pic) {
         const img = {
@@ -106,23 +126,48 @@ export default function EditAccountScreen() {
       const dataToSubmit = imageAndBodyConstructor({
         content: validated,
         images: images,
-        uploadname: ["job_picture"],
+        uploadname: ["profile_picture"],
       });
       const resp: any = await patchData({
         data: dataToSubmit,
         endpoint: `/user/${user_id}/`,
       }).unwrap();
       if (resp) {
+        rendermodal({
+          dispatch: dispatch,
+          header: "Success!",
+          status: "success",
+          content: "Your Profile Has Been Updated!",
+        })
         resp.data && dispatch(setUser(resp.data));
         router.replace("/(app)/(profile)/");
       }
-    } catch (error: any) {}
+    } catch (error: any) {
+      setErros(error)
+    }
   }
+  }
+
+  useEffect(()=>{
+    if(isError){
+        rendermodal({
+            dispatch: dispatch,
+            header: "Error!",
+            status: "error",
+            content: "Incorrect Credentials Provided!",
+          })
+    }
+    },[isError])
 
   return (
     <SafeAreaView
       style={[globalstyles.safeArea, { backgroundColor: theme.background }]}
     >
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
       <TouchableOpacity
         onPress={selectImage}
         style={{
@@ -135,7 +180,6 @@ export default function EditAccountScreen() {
           alignSelf: "center",
         }}
       >
-      
         {profile_pic ? (
           <Image
             style={{
@@ -188,18 +232,19 @@ export default function EditAccountScreen() {
           onChangeText={(val: any) => setNewName(val)}
           onBlur={() => setFocus("")}
           onFocus={() => setFocus("pass")}
+          maxLength={50}
           taggedInputContainerStyles={{
             padding: 5,
             borderColor: focused == "pass" ? "orange" : "#888",
           }}
           value={new_name}
-          secureTextEntry={true}
           caption="Name"
           errorMessage={errors?.new_name ? errors.new_name : ""}
           placeholder="Your full name here: ex John Davis"
         />
 
         <TaggedInput
+          maxLength={25}
           onChangeText={(val: any) => setUserName(val)}
           onBlur={() => setFocus("")}
           onFocus={() => setFocus("uname")}
@@ -208,16 +253,49 @@ export default function EditAccountScreen() {
             borderColor: focused == "uname" ? "orange" : "#888",
           }}
           value={user_name}
-          secureTextEntry={true}
           caption="Username"
-          errorMessage={errors.user_name ? errors?.user_name : ""}
+          errorMessage={errors.username ? errors?.username : ""}
           placeholder="User name ex johnxxKe_254"
+        />
+
+
+        <TaggedInput
+          onChangeText={(val: any) => setIndustry(val)}
+          onBlur={() => setFocus("")}
+          maxLength={100}
+          onFocus={() => setFocus("ind")}
+          taggedInputContainerStyles={{
+            padding: 5,
+            borderColor: focused == "ind" ? "orange" : "#888",
+          }}
+          value={new_industry}
+          caption= { userData.account_type == "recruiter" ?"Industry" :"Profession"}
+          errorMessage={errors.industry ? errors?.industry : ""}
+          placeholder="User name ex johnxxKe_254"
+        />
+
+
+      <TaggedInput
+          onChangeText={(val: any) => setNewlocation(val)}
+          onBlur={() => setFocus("")}
+          onFocus={() => setFocus("location")}
+          maxLength={250}
+          taggedInputContainerStyles={{
+            padding: 5,
+            borderColor: focused == "location" ? "orange" : "#888",
+          }}
+          value={new_location}
+          secureTextEntry={true}
+          caption="Location"
+          errorMessage={errors?.new_bio ? errors.new_bio : ""}
+          placeholder="ex. Nairobi, Kenya"
         />
 
         <TaggedInput
           onChangeText={(val: any) => setBio(val)}
           onBlur={() => setFocus("")}
           onFocus={() => setFocus("bio")}
+          maxLength={250}
           taggedInputContainerStyles={{
             padding: 5,
             borderColor: focused == "bio" ? "orange" : "#888",
@@ -257,6 +335,7 @@ export default function EditAccountScreen() {
             Update Profile
           </Text>
         </TouchableOpacity>
+        </ScrollView>
     </SafeAreaView>
   );
 }

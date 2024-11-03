@@ -1,18 +1,17 @@
 import React, { useEffect } from "react";
 import { FontAwesome } from "@expo/vector-icons";
-import { Redirect, router, Tabs } from "expo-router";
+import { Redirect,Tabs } from "expo-router";
 import { useSelector } from "react-redux";
 import { TabBarIcon } from "@/kazisrc/components/navigation/TabBarIcon";
 
 export default function TabLayout() {
-  const { authentication } = useSelector((state: any) => state.auth);
   const { theme } = useSelector((state: any) => state.theme);
-
-  if(!authentication)
-    {
-    return <Redirect href="/signin"/>
-   }
+  const { authentication } = useSelector((state: any) => state.auth);
   
+  useEffect(()=>{
+    !authentication && <Redirect href="/(auth)"/>
+  },[authentication])
+   
   return (
       <Tabs
         screenOptions={{

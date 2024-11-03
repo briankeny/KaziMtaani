@@ -42,7 +42,7 @@ export default function JobPostsScreen() {
   async function fetchJobPosts() {
     try {
       const resp: any = await getData({ endpoint: "/job-posts/" }).unwrap();
-      console.log(resp)
+     
       if (resp) {
         dispatch(setJobPosts(resp.results));
       }

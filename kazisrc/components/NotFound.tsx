@@ -11,7 +11,7 @@ interface notFoundProps {
 const NotFound:React.FC <notFoundProps> = ({body="No Internet connection",containerstyles,bodystyles}) => {
   const {theme} = useSelector((state:any)=> state.theme)
   return (
-    <View style={[globalstyles.columnCenter,{height:'70%'},containerstyles]}>
+    <View style={[globalstyles.columnCenter,{height:'100%'},containerstyles]}>
         <View style={globalstyles.column}>  
           
             <View style={[{width:300, height:200, alignSelf:'center',borderRadius:8,overflow:'hidden',marginVertical:20}]}>

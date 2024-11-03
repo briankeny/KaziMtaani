@@ -1,5 +1,5 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { Redirect } from 'expo-router'
+import { Redirect, router } from 'expo-router'
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useColorScheme } from 'react-native'
@@ -12,6 +12,7 @@ const Index = () => {
   const {authentication} = useSelector((state:any)=>state.auth)
   const { current_theme} =  useSelector((state:any) => state.theme)
 
+  
   // Inherit Theme if System Default is Enabled
   function prepareTheme(){
     if (current_theme == 'default'){
@@ -22,9 +23,9 @@ const Index = () => {
  useEffect(()=>{
  prepareTheme()
  },[])
-  
 
-  return authentication? <Redirect href="/(app)"/> :  <Redirect href="/signin"/> 
+
+  return authentication? <Redirect href="/(app)"/> :  <Redirect href="/(auth)"/> 
 }
 
 export default Index

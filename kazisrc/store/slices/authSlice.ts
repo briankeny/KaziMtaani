@@ -7,6 +7,8 @@ const initialState = {
     onlineStatus:false,
     authError:"",
     userData:{},
+    userSkills:[],
+    userSections:[],
     accessToken:null,
     refreshToken:null,
 }
@@ -27,8 +29,11 @@ const authSlice = createSlice({
       setOnlineStatus:(state,action)=>{
         state.onlineStatus = action.payload
       },
-      logout: (state)=>{
-        state.authentication = false 
+      setUserSkills:(state,action) =>{
+        state.userSkills = action.payload
+      },
+      setUserSections:(state,action) =>{
+        state.userSections = action.payload
       },
       setAuth : (state,action)=> {
         state.authentication =  action.payload
@@ -45,9 +50,9 @@ const authSlice = createSlice({
 }
 )
 
-export const {setAuth,setUser,setAuthError,
+export const {setAuth,setUser,setAuthError,setUserSkills,setUserSections,
   setAuthScreenIndex,
-  setLocation,setOnlineStatus,logout,setTokens} = authSlice.actions
+  setLocation,setOnlineStatus,setTokens} = authSlice.actions
 
 
 export default authSlice.reducer;

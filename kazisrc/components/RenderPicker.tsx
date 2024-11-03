@@ -22,8 +22,7 @@ const RenderPicker = ({value,caption='',captionStyles, list,caretColor,label='',
     onValueChange={pickerAction}
     >
       {caption &&
-     <Picker.Item style={[{color:theme.text},captionStyles]} label={ 
-      selectedValue ? selectedValue[label] : caption}/>}
+     <Picker.Item style={[{color:theme.text},captionStyles]} label={caption}/>}
  {list.map((item:any,index:number)=>{
     return(
     <Picker.Item  key={index}  label={label?item[label]:item} value={ value? item[value]:item} />

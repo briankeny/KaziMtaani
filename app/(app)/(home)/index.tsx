@@ -3,9 +3,11 @@ import { RenderButtonRow } from "@/kazisrc/components/Buttons";
 import { HelloWave } from "@/kazisrc/components/HelloWave";
 import MapMarker from "@/kazisrc/components/MapMarker";
 import MapViewer from "@/kazisrc/components/MapViewer";
+import Toast from "@/kazisrc/components/Toast";
 import { jobMarker, userMarker } from "@/kazisrc/images/images";
 import { useGetResourceMutation } from "@/kazisrc/store/services/authApi";
 import { setJobPosts } from "@/kazisrc/store/slices/jobsSlice";
+import { clearModal } from "@/kazisrc/store/slices/modalSlice";
 import { useAppDispatch } from "@/kazisrc/store/store";
 import { globalstyles } from "@/kazisrc/styles/styles";
 import { dateFormater } from "@/kazisrc/utils/utils";
@@ -33,12 +35,21 @@ import { useSelector } from "react-redux";
 
 export default function HomeScreen() {
   const dispatch = useAppDispatch()
-  const { theme, isNightMode } = useSelector((state: any) => state.theme);
+  const { theme} = useSelector((state: any) => state.theme);
   const {jobposts} = useSelector((state:any)=>state.jobs);
-  const { userData, authentication } = useSelector((state: any) => state.auth);
+  const { userData} = useSelector((state: any) => state.auth);
   const [analytics, setAnalytics] = useState<any | null>(null);
   const [getData, { isLoading:getLoading, isError:existsGetError, error:getError, isSuccess:getSuccess }] =
     useGetResourceMutation();
+  
+  const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
+      (state: any) => state.modal
+    );
+
+    function closeModal() {
+      dispatch(clearModal());
+      return true;
+    }
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [openBottomSheetDrawer, setOpenBottomSheetDrawer] = useState(false);
@@ -60,21 +71,21 @@ export default function HomeScreen() {
     try {
       const resp = await getJobsData({ endpoint: "/analytics/" }).unwrap();
       if (resp) {
-        resp.data && setAnalytics(resp.data);
+        resp.results && setAnalytics(resp.results);
       }
     } catch (error) {}
   }
 
   function mapAction() {
-    console.log("Clicked");
+    // const { latitude, longitude } = event.nativeEvent.coordinate;
+    // console.log('Choose location',latitude,longitude)
+  
   }
 
   useEffect(()=>{
     fetchJobs()
     fetchDataAnalytics()
-
   },[])
-
 
   const Menu = ({
     Icon,
@@ -606,6 +617,13 @@ export default function HomeScreen() {
           <FontAwesome name="map-marker" size={24} color="red" />
         </Pressable>
       </ScrollView>
+      <Toast
+          visible={openModal}
+          status={modalStatus}
+          onPress={() => closeModal()}
+          modalHeader={modalHeader}
+          modalContent={modalContent}
+        />
     </SafeAreaView>
   );
 }

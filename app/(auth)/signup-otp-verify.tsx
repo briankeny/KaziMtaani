@@ -75,7 +75,6 @@ function OtpVerifyScreen() {
 
   useEffect(()=>{
     if(isError){
-      console.log(error)
         rendermodal({
             dispatch: dispatch,
             header: "Error!",
@@ -92,7 +91,7 @@ function OtpVerifyScreen() {
   return (
     <SafeAreaView
     style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
-    <View style={[globalstyles.column,{paddingVertical:20}]}>
+    <View style={[globalstyles.column,{paddingVertical:20,backgroundColor:theme.card}]}>
       
     <Text style={{
       

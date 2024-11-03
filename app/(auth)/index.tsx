@@ -49,7 +49,6 @@ const SigninScreen = ({navigation}:any) => {
         
         }]
         const validated = validationBuilder(validationData)
-        console.log(validated)
         if (validated) {
           const response = await handleLogin({
             data: validated,
@@ -73,7 +72,7 @@ const SigninScreen = ({navigation}:any) => {
           }
       }
       } catch (error: any) {
-        console.log(error)
+
        setErrors(error)
       }
     }

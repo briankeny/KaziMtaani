@@ -7,7 +7,7 @@ export const noAuthHeader = {
 }
 
 export const authApi = createApi({
-  reducerPath: 'restApi',
+  reducerPath: 'restApi', 
   baseQuery: fetchBaseQuery({ baseUrl:`${baseUrl}`,   
   prepareHeaders: (headers, {getState}) => {
     const state = getState() as RootState;

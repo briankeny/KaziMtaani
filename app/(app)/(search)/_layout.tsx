@@ -1,13 +1,12 @@
-import React, { useState } from 'react'
-import { Stack } from 'expo-router'
-import { useAppDispatch } from '@/kazisrc/store/store';
-import { SearchHeader } from '@/kazisrc/components/Headers';
+import React, { useEffect } from 'react'
+import { Redirect, Stack } from 'expo-router'
+import { useSelector } from '@/kazisrc/store/store';
 
 const SearchStackLayout = () => {
-  
-  // async function  searchUsers(params:type) {
-    
-  // }
+  const {authentication}  = useSelector((state:any)=>state.auth)
+  useEffect(()=>{
+    !authentication && <Redirect href="/signin"/>
+  },[authentication])
 
   return (
     <Stack screenOptions={{headerShown:false}}>

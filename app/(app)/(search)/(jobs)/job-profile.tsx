@@ -42,7 +42,6 @@ export default function JobProfileScren() {
     try{
       const resp =  await getData({endpoint:`/job-applications/?jobpost=${post_id}`}).unwrap()
       if(resp){
-        console.log('applicants',resp)
         setJobApplicants(resp?.results)
         // dispatch(setJobPost(data))
       }

@@ -153,3 +153,30 @@ export function formatDate(date:any) {
   }
 
 }
+
+
+
+// Date object to string representation
+
+export function formatDateToString(obj:any) {
+  
+  try {
+  const date = new Date(obj) 
+
+  const day = date.getDate();
+  const month = date.toLocaleString('default', { month: 'long' });
+  const year = date.getFullYear();
+
+  // Get the correct ordinal suffix for the day
+  const ordinalSuffix = (n:any) => {
+    const suffixes = ["th", "st", "nd", "rd"];
+    const value = n % 100;
+    return suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0];
+  };
+
+  return `${day}${ordinalSuffix(day)} ${month} ${year}`
+}
+catch(err){
+  return ''
+}
+}

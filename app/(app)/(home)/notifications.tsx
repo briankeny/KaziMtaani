@@ -66,15 +66,44 @@ const NotificationsScreen = () => {
     return true;
   }
 
-  function goToNotification(notification: any) {
-    switch (notification) {
-      case "message":
-        break;
-      default:
-        break;
+  async function markNotification(id:any){
+    try{
+        const data = {read_status:true}
+        const resp = await patchData({data:data,endpoint:`/notification/${id}/`}).unwrap()
+        if(resp)
+          fetchNotifications()
+      }
+    catch(error){
+
     }
   }
 
+
+  async function notificationAction(notification:any){
+    try{
+      console.log('acting')
+      //  const resp = await getData({'endpoint':notification.action}).unwrap()
+      //  if(resp){
+        switch(notification?.notification_category){
+          case 'general':
+          console.log('Ended here')  
+          break;
+          case 'user':
+            break;
+          case 'job':
+            break;
+          default:
+            break;
+        }
+        markNotification(notification?.notification_id)
+      //  }
+    }
+    catch(error){
+
+    }
+  }
+
+  
   function opendialogue(item:any) {
     setNotification(item)
     setOpenBottomSheetDrawer(true)
@@ -86,6 +115,7 @@ const NotificationsScreen = () => {
         const resp = await deleteData({
           endpoint: `/notification/${id}/`,
         }).unwrap();
+        console.log(resp)
         if (resp) {
           rendermodal({
             dispatch: dispatch,
@@ -93,13 +123,14 @@ const NotificationsScreen = () => {
             status: "success",
             content: "Notification has been removed!",
           });
+         router.replace('/(app)/(home)/notifications') 
         }
       } catch (error: any) {
         rendermodal({
           dispatch: dispatch,
           header: "Error!",
           status: "error",
-          content: error.message,
+          content: 'Notification could not be deleted. Please try again later',
         });
       }
     }
@@ -109,9 +140,8 @@ const NotificationsScreen = () => {
     try{
       const resp =  await getData({endpoint:`/notifications/`}).unwrap()
       if(resp){
-
         const data = resp?.results ? resp.results : []
-        console.log('THis is resp',resp)
+        console.log(resp)
         dispatch(setNotifications(data))
       }
     }
@@ -124,16 +154,6 @@ const NotificationsScreen = () => {
     fetchNotifications()
   },[])
 
-  //   useEffect(()=>{
-  //     if(isError){
-  //         rendermodal({
-  //             dispatch: dispatch,
-  //             header: "Error!",
-  //             status: "error",
-  //             content: "Incorrect Credentials Provided!",
-  //           })
-  //     }
-  //     },[isError])
 
   function RenderBottomContent() {
     return ( 
@@ -142,7 +162,7 @@ const NotificationsScreen = () => {
       Icon={AntDesign}
       icon_color={theme.text}
       icon_name={ notification.read_status? 'star':'staro'}
-      action={()=>deleteNotification(notification.notification_id)}
+      action={()=>markNotification(notification.notification_id)}
       buttonTextStyles={{color:theme.text,fontWeight:'400',fontSize:18}}
       button_text={notification.read_status ? 'UnMark as Read': 'Mark as Read'}
       buttonStyles={[globalstyles.row,{padding:20,gap:10}]}/>
@@ -161,7 +181,6 @@ const NotificationsScreen = () => {
     )
   }
   
-
   return (
     <SafeAreaView
       style={[globalstyles.safeArea, { backgroundColor: theme.background }]}
@@ -185,8 +204,8 @@ const NotificationsScreen = () => {
             item = {item}
             dat={dat}
             time={time}
-            // goToNotification: goToNotification,
-            // openDialogue: opendialogue,
+            goToNotification = {()=>notificationAction(item)}
+            openDialogue ={ ()=>opendialogue(item)}
             theme= {theme}
             />
           )
@@ -201,7 +220,8 @@ const NotificationsScreen = () => {
         >
           {getAllError ? 
             <NotFound
-              body={"Oops! could not fetch notifications at the moment"}
+            
+              body={"Oops! We could not fetch your notifications at the moment"}
             />
            : 
             <View
@@ -249,63 +269,70 @@ export function RenderNotification({
   theme,
 }: any) {
  
+  
   return (
     <TouchableOpacity
-      onPress={() => goToNotification(item)}
+      onPress={goToNotification}
       style={[
         globalstyles.column,
-        globalstyles.card,
-        {
-          paddingHorizontal: 20,
+        { 
+          paddingHorizontal:20,
+          borderColor:'#999',
+          borderWidth:0.3,
           marginVertical: 1,
-          paddingTop: 10,
-          paddingBottom: 5,
-          elevation: 5,
-          backgroundColor: theme.card },
+          paddingVertical:5
+        },
+        item?.read_status == false && {backgroundColor:theme.postBackground}
       ]}
       key={index}
     >
-      <View style={[globalstyles.rowWide]}>
+        <View style={[globalstyles.rowWide]}>
+      <Text style={[{ fontSize: 11 ,color:'#999'}]}>
+          {dat}
+        </Text>
         <Text style={[{ fontSize: 11, textAlign: "right", color: "green" }]}>
           {time}
         </Text>
       </View>
+      <View style={globalstyles.row}>            
+      
+                <View style={[{width:'90%',paddingHorizontal:10}]}>
+                    <View style={[globalstyles.row,{gap:4,alignContent:'center',alignItems:'center'}]}>
+                    <View style={[{width:30,height:30,borderRadius:20,marginTop:10,
+                      backgroundColor:'orange'
+                    }]}>
+                    {item?.user?.profile_picture ? (
+                            <Image
+                              style={{alignSelf:'center',width:30,height:30, 
+                                borderRadius:15, resizeMode:'cover'}}
+                              source={{uri:item.user.profile_picture}}
+                            />
+                          ) : <Entypo name="user" 
+                          size={21} style={[{alignSelf:'center',paddingTop:20},
+                            {color:'#888'}]} />              
+                          }
+                    </View>
+                    <Text style={{color:theme.text,
+                      paddingTop:5,
+                      fontFamily:'Poppins-Bold' }}>
+                        {item.subject}
+                    </Text>
+                    </View>
 
-      <View style={globalstyles.rowWide}>
-                <View style={[{width:60,height:60,borderRadius:30,marginTop:10}]}>
-                {logo ? (
-                        <Image
-                          style={{alignSelf:'center',width:60,height:60, 
-                            borderRadius:30, resizeMode:'cover'}}
-                          source={logo}
-                        />
-                      ) : <Entypo name="user" size={24} style={[{alignSelf:'center',paddingTop:20},theme && {color:theme.text}]} />              
-      
-                      }
-                </View>
-      
-                <View style={[{width:'78%'}]}>
-              
-                    <Text  
-                
-                    numberOfLines={2}
-                    ellipsizeMode='tail'
+                    <Text         
                     style={[
                     {color:theme.text}]}>
                         {item.message}
                     </Text>
                 </View>
       
-                <TouchableOpacity onPress={openDialogue} style={[{width:'10%'}]} >
-                      <Entypo name="dots-three-vertical" size={20} style={[theme && {color:theme.text}]} />
+                <TouchableOpacity onPress={openDialogue} style={[
+                  globalstyles.columnCenter,
+                  {width:'10%'}]} >
+                      <Entypo name="dots-three-vertical"
+                       size={20} style={[theme && {color:theme.text}]} />
                 </TouchableOpacity>
-      
             </View>
-      <View style={globalstyles.columnEnd}>
-        <Text style={[{ fontSize: 11 }, theme && { color: theme.text }]}>
-          {dat}
-        </Text>
-      </View>
     </TouchableOpacity>
   );
 }

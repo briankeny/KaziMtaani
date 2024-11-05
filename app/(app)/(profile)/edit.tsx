@@ -51,7 +51,7 @@ export default function EditAccountScreen() {
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
-      router.replace("/(app)/(home)/notifications");
+      router.replace("/(app)/(profile)/edit");
     }, 2000);
   }, [router]);
 
@@ -60,13 +60,10 @@ export default function EditAccountScreen() {
     full_name && setNewName(full_name);
     username && setUserName(username);
     industry && setIndustry(industry);
-    location && setNewlocation(location)
+    location && setNewlocation(location);
+    profile_picture && setProfilePic(profile_picture);
     
   }, []);
-
-  useEffect(() => {
-    profile_picture && setProfilePic(profile_picture);
-  }, [profile_picture]);
 
   async function selectImage() {
     try {
@@ -101,7 +98,7 @@ export default function EditAccountScreen() {
           minLength: 3
         },
         {
-          industry:industry,
+          industry:new_industry,
           type:'string',
           minLength :2
         },
@@ -139,7 +136,7 @@ export default function EditAccountScreen() {
           status: "success",
           content: "Your Profile Has Been Updated!",
         })
-        resp.data && dispatch(setUser(resp.data));
+        resp ? dispatch(setUser(resp)) : null
         router.replace("/(app)/(profile)/");
       }
     } catch (error: any) {
@@ -176,7 +173,7 @@ export default function EditAccountScreen() {
           marginVertical: 10,
           overflow: "hidden",
           borderRadius: 100,
-          backgroundColor: "#b35900",
+          backgroundColor: 'rgba(0,0,0,0.2)',
           alignSelf: "center",
         }}
       >
@@ -271,7 +268,7 @@ export default function EditAccountScreen() {
           value={new_industry}
           caption= { userData.account_type == "recruiter" ?"Industry" :"Profession"}
           errorMessage={errors.industry ? errors?.industry : ""}
-          placeholder="User name ex johnxxKe_254"
+          placeholder="Write your industry or profession here..."
         />
 
 
@@ -298,13 +295,14 @@ export default function EditAccountScreen() {
           maxLength={250}
           taggedInputContainerStyles={{
             padding: 5,
+            minHeight:60,
             borderColor: focused == "bio" ? "orange" : "#888",
           }}
           value={new_bio}
           secureTextEntry={true}
           caption="Bio"
           errorMessage={errors?.new_bio ? errors.new_bio : ""}
-          placeholder="Tell us about who you are and what you do"
+          placeholder="Tell us about you and what you do"
         />
 
       </View>

@@ -78,15 +78,13 @@ const NotificationsScreen = () => {
     }
   }
 
-
   async function notificationAction(notification:any){
     try{
-      console.log('acting')
+   
       //  const resp = await getData({'endpoint':notification.action}).unwrap()
       //  if(resp){
         switch(notification?.notification_category){
           case 'general':
-          console.log('Ended here')  
           break;
           case 'user':
             break;
@@ -112,19 +110,19 @@ const NotificationsScreen = () => {
   async function deleteNotification(id: any) {
     if (!delLoading) {
       try {
-        const resp = await deleteData({
+        setOpenBottomSheetDrawer(false)
+        await deleteData({
           endpoint: `/notification/${id}/`,
-        }).unwrap();
-        console.log(resp)
-        if (resp) {
+        })
+
           rendermodal({
             dispatch: dispatch,
             header: "Success!",
             status: "success",
             content: "Notification has been removed!",
           });
-         router.replace('/(app)/(home)/notifications') 
-        }
+          fetchNotifications()
+        
       } catch (error: any) {
         rendermodal({
           dispatch: dispatch,
@@ -141,7 +139,7 @@ const NotificationsScreen = () => {
       const resp =  await getData({endpoint:`/notifications/`}).unwrap()
       if(resp){
         const data = resp?.results ? resp.results : []
-        console.log(resp)
+       
         dispatch(setNotifications(data))
       }
     }

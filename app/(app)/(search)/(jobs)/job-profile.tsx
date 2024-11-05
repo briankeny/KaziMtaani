@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, View,Text, TouchableOpacity,Image, Pressable, RefreshControl, ScrollView, Dimensions} from 'react-native'
-import { useDeleteResourceMutation, useGetResourceMutation, usePostResourceMutation } from '@/kazisrc/store/services/authApi';
+import {useGetResourceMutation, usePostResourceMutation } from '@/kazisrc/store/services/authApi';
 import { useAppDispatch } from '@/kazisrc/store/store';
 import { globalstyles } from '@/kazisrc/styles/styles';
 import { useSelector } from 'react-redux';
@@ -10,25 +10,31 @@ import { HomeMenuProps } from '@/kazisrc/types/types';
 import { AntDesign, FontAwesome } from '@expo/vector-icons';
 import ParallaxScrollView from '@/kazisrc/components/ParallaxScrollView';
 import { setFavouriteJobs } from '@/kazisrc/store/slices/jobsSlice';
-import { router } from 'expo-router';
+import { router, useGlobalSearchParams } from 'expo-router';
+import { Loading } from '@/kazisrc/components/Loading';
+import NotFound from '@/kazisrc/components/NotFound';
 
 export default function JobProfileScren() {
   const dispatch = useAppDispatch();
+  const params:any = useGlobalSearchParams()
+  const {post_id} = params
   const {userData} = useSelector((state:any)=>state.auth)
-  const {jobpost,favouriteJobs} = useSelector((state:any)=>state.jobs)
-  const {post_id} = jobpost
+  const {favouriteJobs} = useSelector((state:any)=>state.jobs)
+  
   const { theme} = useSelector((state: any) => state.theme);
   const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
     (state: any) => state.modal
   );
   const [jobapplicants , setJobApplicants] = useState<any>([])
   const [userIsApplicant ,setUserIsApplicant] = useState<boolean>(false)
-  const [getData, {isLoading,isSuccess,isError,error}] = useGetResourceMutation();
-  const [postData, {isLoading:postLoading,isError:existsPostError,error:postError}] = usePostResourceMutation();
-  const [deleteData, { isLoading: delLoading }] = useDeleteResourceMutation();
-  
+  const [getData, {isLoading,isSuccess,isError}] = useGetResourceMutation();
+  const [postData, {isLoading:postLoading}] = usePostResourceMutation();
+
   const [isFavourite,setIsFavourite] = useState<boolean>(false)
   const [refreshing, setRefreshing] = React.useState(false);
+
+  const [jobpost,setJobPost] = useState<any>({})
+
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
     setTimeout(() => {
@@ -36,6 +42,25 @@ export default function JobProfileScren() {
       router.replace("/(app)/(jobs)/job-profile");
     }, 2000);
   }, [router]);
+
+  async function fetchJobPost() {
+    if(!isLoading){
+    try{
+      const resp =  await getData({endpoint:`/job-post/${post_id}/`}).unwrap()
+      if(resp)
+         setJobPost(resp)
+        // dispatch(setJobPost(data))
+    }
+    catch(error:any){
+      rendermodal({
+        dispatch: dispatch,
+        header: "Oops!",
+        status: "error",
+        content: "Could not get post!",
+      }); 
+    }
+  }
+  }
 
   async function fetchJobApplications() {
     if(!isLoading){
@@ -51,35 +76,6 @@ export default function JobProfileScren() {
   }
   }
 
-  async function cancelApplication() {
-    if (!delLoading && userIsApplicant) {
-      try {
-        const application_details:any = jobapplicants.filter((item:any)=> item.applicant === userData.user_id)
-        const item = application_details[0]
-        if(item){
-        await deleteData({
-          endpoint: `/job-application/${item["id"]}/`,
-        })
-          rendermodal({
-            dispatch: dispatch,
-            header: "Success!",
-            status: "success",
-            content: "Application has been cancelled!",
-          });
-        setUserIsApplicant(false)
-        fetchJobApplications()
-      }
-      } catch (error: any) {
-        rendermodal({
-          dispatch: dispatch,
-          header: "Error!",
-          status: "error",
-          content: "Could not cancel application. Please try again later",
-        });
-      }
-    }
-  }
-  
 
   //Toggle Modal
   function closeModal(){
@@ -89,7 +85,6 @@ export default function JobProfileScren() {
   function checkIfUserApplicant(list:any){
     try{
       const existUser = list.find((item:any)=> item.applicant == userData.user_id) !== undefined
-
       existUser && setUserIsApplicant(true)
     }
     catch(err){
@@ -131,7 +126,7 @@ export default function JobProfileScren() {
   },[jobapplicants])
 
   function checkFavJobs(favouriteJobs:any){
-    const isfav =  favouriteJobs.find((item:any)=>item.post_id = jobpost.post_id) !== undefined
+    const isfav =  favouriteJobs.find((item:any)=>item.post_id = post_id) !== undefined
     if(isfav){
       setIsFavourite(true)
     }
@@ -141,9 +136,9 @@ export default function JobProfileScren() {
   }
 
   function toggleFavJobs(){
-    const isfav = favouriteJobs.find((item:any)=>item.post_id === jobpost.post_id) !== undefined
+    const isfav = favouriteJobs.find((item:any)=>item.post_id === post_id) !== undefined
     if(isfav){
-      const latest = favouriteJobs.filter((item:any)=>item.post_id != jobpost.post_id)
+      const latest = favouriteJobs.filter((item:any)=>item.post_id != post_id)
       dispatch(setFavouriteJobs(latest))
       setIsFavourite(false)
     }  
@@ -155,9 +150,12 @@ export default function JobProfileScren() {
   }
 
   useEffect(()=>{
+    post_id && fetchJobPost()
+  },[post_id])
+
+  useEffect(()=>{
    favouriteJobs && checkFavJobs(favouriteJobs)
   },[favouriteJobs])
-
 
   useEffect(()=>{
    if (isError){
@@ -209,19 +207,22 @@ export default function JobProfileScren() {
     <SafeAreaView
     style={[globalstyles.safeArea,{ 
       backgroundColor: theme.background,height:Dimensions.get('window').height }]}>
-
-<ScrollView
+      {
+      isLoading ? 
+      <Loading/>
+       :
+       isSuccess && jobpost.post_id ?
+      <ScrollView
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         >
-    
-  
-
+      
+      <View style={[globalstyles.column]}>
       <View style={[globalstyles.rowEven,{top:40, position:'absolute',width:'100%',zIndex:1}]}>
        
       <Pressable 
-      onPress={()=>router.back()}>
+      onPress={()=>router.replace('/(app)/(search)')}>
         <AntDesign name="back" size={30} color={'#fff'} />
        </Pressable>
        
@@ -232,10 +233,12 @@ export default function JobProfileScren() {
         >
           {jobpost?.recruiter?.full_name}
         </Text>
-
+        
+        {jobpost && jobpost.post_id &&
         <Pressable onPress={toggleFavJobs}>
           <FontAwesome name={ isFavourite? "heart" :"heart-o"} size={24} color="orange" />
         </Pressable>
+        }
         
       </View>
       
@@ -258,7 +261,8 @@ export default function JobProfileScren() {
           
       <View style={[globalstyles.column,{
         borderTopLeftRadius:20,borderTopRightRadius:20, 
-        backgroundColor:theme.card,elevation:2,marginTop:-20
+        backgroundColor:theme.card,elevation:2,marginTop:-20,
+        paddingBottom:24
         }]}>
             
             <View style={[globalstyles.column,{paddingTop:20}]}>
@@ -307,24 +311,23 @@ export default function JobProfileScren() {
             <Text style={{color:theme.text,lineHeight:21}}>{jobpost?.description}</Text>
           </View>
       </View>
-      <Toast
-          visible={openModal}
-          status={modalStatus}
-          onPress={() => closeModal()}
-          modalHeader={modalHeader}
-          modalContent={modalContent}
-        />
+      </View>
       </ScrollView>
-     
-      <View style={[globalstyles.rowWide,{paddingHorizontal:20,position:'absolute',bottom:5,width:'100%'}]}>
+      :
+      <NotFound
+        body='Oops! Nothing here...'
+      />  
+    }
+     { jobpost &&
+     jobpost.post_id && <View style={[globalstyles.rowWide,{paddingHorizontal:20,position:'absolute',bottom:0,width:'100%'}]}>
 
-            <View style={[globalstyles.column]}>
-              <Text style={{color:theme.text,fontSize:11}}>Applicants</Text>
-              <Text style={{color:theme.text,fontFamily:'Poppins-Bold'}}>{
+            <View style={[globalstyles.column,{backgroundColor:'rgba(0,105,0,6)',paddingHorizontal:20}]}>
+              <Text style={{color:'#fff',fontSize:12}}>Applicants</Text>
+              <Text style={{color:'#fff',fontFamily:'Poppins-Bold'}}>{
               jobapplicants.length}</Text>
             </View>
             
-            {!isLoading &&
+            {!isLoading && !userIsApplicant && userData.account_type=='recruiter' &&
             <TouchableOpacity 
             style={{
               minWidth:150,
@@ -333,16 +336,24 @@ export default function JobProfileScren() {
               borderRadius:20,
               backgroundColor: userIsApplicant ? 'red': 'green'
             }}
-            onPress={ userIsApplicant ? cancelApplication:
-              applyJob}>
+            onPress={ applyJob}>
                 <Text style={{color:'#fff',
                   paddingTop:8, fontSize:18,fontWeight:'500',
                   paddingHorizontal:2,textAlign:'center'}}>
-                   { userIsApplicant ? 'Cancel Application':
-                    'Apply Job'}</Text>
+                  
+                  Apply Job</Text>
             </TouchableOpacity>}
 
-          </View>
+      </View>
+      }
+
+      <Toast
+          visible={openModal}
+          status={modalStatus}
+          onPress={() => closeModal()}
+          modalHeader={modalHeader}
+          modalContent={modalContent}
+        />
     </SafeAreaView>
   )
 }

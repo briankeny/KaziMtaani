@@ -9,10 +9,10 @@ export const noAuthHeader = {
 export const authApi = createApi({
   reducerPath: 'restApi', 
   baseQuery: fetchBaseQuery({ baseUrl:`${baseUrl}`,   
+
   prepareHeaders: (headers, {getState}) => {
     const state = getState() as RootState;
     const  token = state['auth'].accessToken;
-  
     if (token) {
       headers.set('Authorization', `Bearer ${token}`)
     }
@@ -51,10 +51,10 @@ export const authApi = createApi({
           url: `${endpoint}`,
           method: 'POST',
           body:data,
-          prepareHeaders:(headers:any)=>{
-            headers.set('Content-Type','multipart/form-data')
-            return headers
-        },
+        //   prepareHeaders:(headers:any)=>{
+        //     headers.set('Content-Type','multipart/form-data')
+        //     return headers
+        // },
         })
       }),
     

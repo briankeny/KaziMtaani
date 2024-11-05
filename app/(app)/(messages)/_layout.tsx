@@ -8,7 +8,7 @@ const StackLayout = () => {
   const {authentication}  = useSelector((state:any)=>state.auth)
    
   useEffect(()=>{
-    !authentication && <Redirect href="/(auth)"/>
+    !authentication && <Redirect href="/"/>
   },[authentication])
    
 

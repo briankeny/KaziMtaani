@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { logo } from "../images/images";
 import { globalstyles } from "../styles/styles";
 import {
@@ -8,7 +8,7 @@ import {
   Ionicons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { Redirect, router } from "expo-router";
 import { useState } from "react";
 import {
   SafeAreaView,
@@ -268,6 +268,7 @@ export function SearchHeader({
           style={[
             {
               width: "90%",
+              color:theme.text,
               height: 40,
             },
             focused == "srch" && {
@@ -280,7 +281,7 @@ export function SearchHeader({
           onBlur={() => setFocus("")}
           placeholder={"Search here..."}
           placeholderTextColor={"#888"}
-          onChangeText={(val) => setSearchQuery(val)}
+          onChangeText={setSearchQuery}
         />
 
         <TouchableOpacity
@@ -362,13 +363,18 @@ export function MyDrawer(props: any) {
         resp && dispatch(setAuth(false));
         router.replace('/')
       } catch (error) {
-        console.log('auth',authentication)
+       
         dispatch(setAuth(false));
         router.replace('/')
         
       }
     }
   };
+
+  useEffect(()=>{
+    if(!authentication)
+      router.push('/')
+  },[authentication])
 
   return (
     <SafeAreaView

@@ -1,15 +1,14 @@
-import { RenderButtonRow } from '@/kazisrc/components/Buttons'
 import { TaggedInput } from '@/kazisrc/components/Inputs'
 import { useAppDispatch } from '@/kazisrc/store/store'
 import { globalstyles } from '@/kazisrc/styles/styles'
 import { formatDate } from '@/kazisrc/utils/utils'
 import { Entypo, MaterialIcons } from '@expo/vector-icons'
 import React, { useEffect, useState } from 'react'
-import { SafeAreaView, ScrollView, View, Pressable,Text } from 'react-native'
+import { SafeAreaView, ScrollView, View, Pressable,Text, TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useDeleteResourceMutation, useGetResourceMutation, usePatchResourceMutation, usePostResourceMutation } from '@/kazisrc/store/services/authApi'
-import { router, useGlobalSearchParams, useLocalSearchParams } from 'expo-router'
+import { useDeleteResourceMutation, useGetResourceMutation, usePatchResourceMutation} from '@/kazisrc/store/services/authApi'
+import { router, useGlobalSearchParams} from 'expo-router'
 import { validationBuilder } from '@/kazisrc/utils/validator'
 import { clearModal, rendermodal } from '@/kazisrc/store/slices/modalSlice'
 import Toast from '@/kazisrc/components/Toast'
@@ -41,7 +40,7 @@ export default function EditSectionScreen (){
         return true;
       }
 
-    async function postNewSection() {
+    async function patchSection() {
         if(!patchLoading) {
           try{
             const rules = [
@@ -68,7 +67,7 @@ export default function EditSectionScreen (){
             start_date !== null? data['start_date'] = formatDate(start_date) : null
             end_date !== null ?  data['end_date'] = formatDate(end_date) : null
 
-            const resp = await patchData({endpoint:`/user-info/${sectionid}/`, data:data}).unwrap()
+            const resp = await patchData({data:data,endpoint:`/user-info/${sectionid}/`}).unwrap()
               if (resp){
                 rendermodal({
                   dispatch: dispatch,
@@ -80,7 +79,7 @@ export default function EditSectionScreen (){
              router.replace('/(app)/(profile)')
           }
           catch(error:any){
-          
+           setErros(error)
           }
         }
     }
@@ -89,18 +88,17 @@ export default function EditSectionScreen (){
       if(!getLoading){
         try{
           const resp =  await getData({endpoint:`/user-info/${id}/`}).unwrap()
-          console.log(resp)
+        
           if(resp){
-            const data = resp?.results ? resp.results : []
-            console.log(resp)
-            // const {title,description,subject} = data
-            // setDescription(description)
-            // setTitle(title)
-            // setSubject(subject)
+            const {title,description,subject,end_date,start_date} = resp
+            setDescription(description)
+            setTitle(title)
+            setSubject(subject)
+            start_date && setStartDate(new Date(start_date))
+            end_date && setEndDate( new Date(end_date))
           }
         }
         catch(error){
-          console.log(error)    
         }
       }
       } 
@@ -123,7 +121,7 @@ export default function EditSectionScreen (){
               dispatch: dispatch,
               header: "Error!",
               status: "error",
-              content: "Oops! We could not delete this section!",
+              content: "Oops! We could not delete this section please try again later!",
             })
           }
         }
@@ -186,14 +184,14 @@ export default function EditSectionScreen (){
     onChangeText={(val: any) => setDescription(val)}
     onBlur={() => setFocus("")}
     onFocus={() => setFocus("descr")}
-    maxLength={200}
-    taggedInputContainerStyles={[globalstyles.columnCenter,{
+    maxLength={250}
+    taggedInputContainerStyles={[{
       padding: 5,
       minHeight:80,
       borderColor: focused == "descr" ? "green" : "#888",
     }]}
-    taggedInputStyles={{textAlign:'center'}}
     value={description}
+    taggedInputStyles={{textAlign:'left'}}
     caption="Description"
     errorMessage={errors?.description ? errors.description : ""}
     placeholder="Ex. write description here..."
@@ -272,7 +270,7 @@ export default function EditSectionScreen (){
 
 
 
-<Pressable 
+<TouchableOpacity
 style={{
   backgroundColor: "rgba(0,105,0,1)",
   width: "80%",
@@ -280,9 +278,11 @@ style={{
   marginVertical: 12,
   height: 44,
 }}
-onPress={postNewSection}>
-   <Text style={{color:'#fff',alignSelf:'center'}}>Add Section</Text>
-</Pressable>
+onPress={patchSection}>
+   <Text style={{color:'#fff',alignSelf:'center',fontFamily:'Poppins-Bold',fontSize:18,
+    paddingTop:5
+   }}>Save Changes</Text>
+</TouchableOpacity>
  </ScrollView>
    
    <Toast

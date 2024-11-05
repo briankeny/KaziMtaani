@@ -15,6 +15,8 @@ export default function  PeopleScreen () {
     return (
     <SafeAreaView
     style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
+
+      
   </SafeAreaView>
   )
 }

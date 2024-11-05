@@ -18,7 +18,7 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
-import { router } from "expo-router";
+import { Redirect, router } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   TouchableOpacity,
@@ -36,6 +36,7 @@ import { useSelector } from "react-redux";
 export default function HomeScreen() {
   const dispatch = useAppDispatch()
   const { theme} = useSelector((state: any) => state.theme);
+  const {authentication} = useSelector((state:any)=>state.auth)
   const {jobposts} = useSelector((state:any)=>state.jobs);
   const { userData} = useSelector((state: any) => state.auth);
   const [analytics, setAnalytics] = useState<any | null>(null);
@@ -54,7 +55,7 @@ export default function HomeScreen() {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [openBottomSheetDrawer, setOpenBottomSheetDrawer] = useState(false);
   const snapPoints = useMemo(() => ["25%", "50%", "75%", "100%"], []);
-  const [getJobsData, {isLoading, isError, error, isSuccess }] = useGetResourceMutation({fixedCacheKey:'my-jobs'});
+  const [getJobsData, {isLoading, isError, error, isSuccess }] = useGetResourceMutation({fixedCacheKey:'my_jobs'});
 
   async function fetchJobs() {
       try {
@@ -70,9 +71,9 @@ export default function HomeScreen() {
   async function fetchDataAnalytics() {
     try {
       const resp = await getJobsData({ endpoint: "/analytics/" }).unwrap();
-      if (resp) {
-        resp.results && setAnalytics(resp.results);
-      }
+      if (resp) 
+        resp&& setAnalytics(resp);
+      
     } catch (error) {}
   }
 
@@ -81,6 +82,25 @@ export default function HomeScreen() {
     // console.log('Choose location',latitude,longitude)
   
   }
+
+  function goToJobs(){
+    if(userData.account_type == 'jobseeker') {
+      router.push('/(app)/(home)/(jobapplications)')
+    }
+    else{
+      router.push('/(app)/(home)/(jobpost)')
+    }
+  }
+
+  function goToReviews(){
+    if(userData.account_type == 'jobseeker') 
+    router.push('/(app)/(home)/(jobapplications)/my-reviews')
+  }
+
+  useEffect(()=>{
+    !authentication && <Redirect href ='/' />
+ },[authentication])
+
 
   useEffect(()=>{
     fetchJobs()
@@ -93,10 +113,12 @@ export default function HomeScreen() {
     iconColor = "#888",
     header = "",
     content = "",
+    onPress=undefined,
     iconName = "",
   }: any) => {
     return (
-      <View
+      <Pressable
+        onPress={onPress}
         style={[
           globalstyles.column,
           {
@@ -135,7 +157,7 @@ export default function HomeScreen() {
         >
           {header}
         </Text>
-      </View>
+      </Pressable>
     );
   };
 
@@ -209,7 +231,8 @@ export default function HomeScreen() {
           </Text>
 
           <View style={[globalstyles.rowEven, { overflow: "hidden" }]}>
-            <View
+            <Pressable
+              onPress={goToJobs}
               style={[
                 globalstyles.row,
                 {
@@ -238,7 +261,7 @@ export default function HomeScreen() {
               >
                 {analytics?.posts ? analytics.posts : "0"}
               </Text>
-            </View>
+            </Pressable>
 
             <View style={[globalstyles.column, { width: "30%" }]}>
               <View style={[globalstyles.rowWide]}>
@@ -311,6 +334,7 @@ export default function HomeScreen() {
               content={analytics?.reviews ? analytics.reviews : "0"}
               iconColor="orange"
               iconSize={14}
+              onPress={goToReviews}
               iconName="reviews"
               Icon={MaterialIcons}
             />
@@ -330,7 +354,7 @@ export default function HomeScreen() {
               : "Recommendations"}
           </Text>
 
-          <Pressable onPress={()=> userData.account_type == 'recruiter' ? router.push('/(app)/(home)/job-post-admin') : router.push('/(app)/(home)/job-applications')}>
+          <Pressable onPress={()=> userData.account_type == 'recruiter' ? router.push('/(app)/(home)/(jobpost)') : router.push('/(app)/(search)/(jobs)')}>
             <Text
               style={{ color:'#777', fontSize: 18, fontWeight: "500" }}
             >
@@ -349,6 +373,11 @@ export default function HomeScreen() {
             const { dat, time } = dateFormater(item?.date_posted);
             return (
               <TouchableOpacity
+                 onPress={()=>router.replace(
+                  {pathname: '/(app)/(search)/(jobs)/job-profile',
+                    params:{post_id:item.post_id}
+                  })}
+
                 key={index}
                 style={[
                   {
@@ -479,6 +508,23 @@ export default function HomeScreen() {
                     {item?.employment_type}
                   </Text>
 
+                  <View style={[globalstyles.row, { gap: 1}]}>
+              <MaterialIcons name="bar-chart" size={18} color={"#666"} />
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{
+                  color: "orange",
+                  fontSize: 11,
+                  fontWeight: "500",
+                  paddingTop: 2,
+                }}
+              >
+                {item.impressions}
+              </Text>
+            </View>
+                  
+
                   <RenderButtonRow
                     Icon={AntDesign}
                     icon_color={theme.text}
@@ -492,8 +538,13 @@ export default function HomeScreen() {
           }}
         />
 
-        <Pressable
-          onPress={() => router.push("/(app)/(home)/job-post-create")}
+        <TouchableOpacity
+          onPress={() => router.push(
+            userData.account_type=='recruiter'?
+            "/(app)/(home)/(jobpost)/create-post" :
+            "/(app)/(home)/(jobapplications)"
+          
+          )}
           style={[
             globalstyles.row,
             {
@@ -509,11 +560,15 @@ export default function HomeScreen() {
           ]}
         >
           <Text style={{ color: "#fff", alignSelf: "center" }}>
-            Create Job Post
+             {
+              userData.account_type=='recruiter'? 
+              "Create Job Post": "My Job Applications"
+             }
+           
           </Text>
 
           <Ionicons name="add" size={24} color="#fff" />
-        </Pressable>
+        </TouchableOpacity>
 
         <Text
           style={{
@@ -524,7 +579,7 @@ export default function HomeScreen() {
             paddingBottom: 10,
           }}
         >
-          {userData.account_type == "recruiter"
+          { userData?.account_type && userData?.account_type == "recruiter"
             ? "People around me"
             : "Jobs around me"}
         </Text>

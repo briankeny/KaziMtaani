@@ -68,13 +68,11 @@ export const store = configureStore({
       try{
         const state = await store.getState() as RootState;
         const  refresh = await state['auth'].refreshToken;
-        console.log('Middleware executing',action)
-         console.log('refresh',refresh)
         const data = await try_re_auth_procedure(refresh)
         data && store.dispatch(setTokens(data))
       }
       catch(error:any){
-        console.log('Found authentication error',error)
+      
         store.dispatch(setTokens({refresh:null,access:null}));
         store.dispatch(setAuth(false))
         rendermodal({

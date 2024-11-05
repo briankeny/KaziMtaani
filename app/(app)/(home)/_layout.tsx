@@ -63,9 +63,8 @@ const HomeDrawerlayout = () => {
         }}
         name='index'/>
         <Drawer.Screen options={{title:'Notifications'}} name='notifications'/>
-        <Drawer.Screen options={{title:'My Applications'}} name='job-applications'/>
-        <Drawer.Screen options={{title:'My Job Post'}} name='job-post-admin'/>
-        <Drawer.Screen options={{title:'Create Job Post'}} name='job-post-create'/>
+        <Drawer.Screen options={{headerShown:false}} name='(jobapplications)'/>
+        <Drawer.Screen options={{headerShown:false}} name='(jobpost)'/>
    </Drawer>
   )
 }

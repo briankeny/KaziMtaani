@@ -20,6 +20,7 @@ const Index = () => {
     }
  }
 
+
  useEffect(()=>{
  prepareTheme()
  },[])

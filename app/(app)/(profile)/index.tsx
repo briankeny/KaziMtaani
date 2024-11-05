@@ -250,8 +250,7 @@ export default function UserProfileScreen () {
 
     </ScrollView>
 
-    
-      
+
       <Toast
           visible={openModal}
           status={modalStatus}
@@ -262,12 +261,5 @@ export default function UserProfileScreen () {
 
     </SafeAreaView>
   )
-}
-
-
-
-
-function setProfSkills(arg0: any[]) {
-  throw new Error('Function not implemented.')
 }
 

@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text,  ScrollView, TouchableOpacity ,Image, Pressable} from 'react-native';
+import { SafeAreaView, View, Text,  ScrollView, TouchableOpacity ,Image, Pressable, RefreshControl} from 'react-native';
 import { useGetResourceMutation, usePostFormDataMutation } from '@/kazisrc/store/services/authApi';
 import { useAppDispatch, useSelector } from '@/kazisrc/store/store';
 import { globalstyles } from '@/kazisrc/styles/styles';
 import { RenderTaggedInput } from '@/kazisrc/components/Inputs';
-import { clearModal } from '@/kazisrc/store/slices/modalSlice';
+import { clearModal, rendermodal } from '@/kazisrc/store/slices/modalSlice';
 import Toast from '@/kazisrc/components/Toast';
 import RenderPicker from '@/kazisrc/components/RenderPicker';
 import { validationBuilder } from '@/kazisrc/utils/validator';
 import { formatDate, imageAndBodyConstructor, pickImage, randomKeyGenerator, removeSpace} from '@/kazisrc/utils/utils';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Entypo, MaterialIcons } from '@expo/vector-icons';
 import { RenderButtonRow } from '@/kazisrc/components/Buttons';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from 'expo-router';
@@ -26,7 +26,7 @@ const JobPostCreateScreen = () => {
 
   const [title, setTitle] = useState<string>('');
   
-  const  [category , setCategory] = useState<any>();
+  const  [category , setCategory] = useState<any>(null);
   const  [categories ,setCategories] = useState<any>([]);
 
   const [description, setDescription] = useState<string>('');
@@ -36,16 +36,24 @@ const JobPostCreateScreen = () => {
   const [salary_range, setSalary_range] = useState<string>('');
 
   const [openDate,setOpenDate] = useState<any>(false)
-  const [deadline_date, setDeadlineDate] = useState <any>(new Date());
+  const [deadline_date, setDeadlineDate] = useState <any | null>(null);
 
   const [image, setImage] = useState<any>(null);
   const [newImage, setNewImage] = useState(false);
   const [imageType, setImageType] = useState("png");
 
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+      router.replace("/(app)/(home)/(jobpost)/create-post");
+    }, 2000);
+  }, [router]);
+
 
   const handleMapPress = () => {
     // const { latitude, longitude } = event.nativeEvent.coordinate;
-    // console.log('Choose location',latitude,longitude)
     // setLocation({ latitude, longitude });
     };
 
@@ -126,17 +134,13 @@ const JobPostCreateScreen = () => {
             salary_range :salary_range,
             type:'string',
             minLength:8
-          },{
-            deadline_date:formatDate(deadline_date),
-            type:'string',
-            minlength:5,
-            canBeEmpty:true
           }
         ]
         
-        const validated = validationBuilder(rules)
+        const validated:any = validationBuilder(rules)
+        deadline_date !== null ? validated['deadline_date'] = formatDate(deadline_date) : null
+        category !== null ? validated['category'] = category : null
         const images = []
-        
         if(newImage){
               let img ={   
               uri: image,
@@ -144,11 +148,17 @@ const JobPostCreateScreen = () => {
               name: `${removeSpace(userData.full_name)}${randomKeyGenerator()}.${imageType}`
             }
             images.push(img)
-          }
+        }
         const dataToSubmit =imageAndBodyConstructor({content:validated,images:images,uploadname:["job_picture"]});
-        const resp = await postData({enpoint:'/job-posts/' , data:dataToSubmit}).unwrap()
+        const resp = await postData({data:dataToSubmit,endpoint:'/job-post-create/'}).unwrap()
         if(resp){
-            
+          rendermodal({
+            dispatch: dispatch,
+            header: "Success!",
+            status: "success",
+            content: "Your job has been posted!",
+          })
+          router.replace('/(app)/(home)/(jobpost)')    
         }
       }
       catch(error:any){
@@ -157,13 +167,28 @@ const JobPostCreateScreen = () => {
     }
   };
 
+
   useEffect(()=>{
     fetchCategories()
   },[])
 
+  useEffect(()=>{
+    if(isError)   
+     rendermodal({
+     dispatch: dispatch,
+     header: "Error!",
+     status: "error",
+     content: "Oops! An Error Occurred while trying to submit job post!",
+   })
+ },[isError])
+
   return (
     <SafeAreaView style={[globalstyles.safeArea, { backgroundColor: theme.background }]}>
-     <ScrollView>
+     <ScrollView 
+       refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+     showsVerticalScrollIndicator={false}>
 
      <TouchableOpacity onPress={openImagePicker}
             style={[
@@ -223,14 +248,14 @@ const JobPostCreateScreen = () => {
         {RenderPicker({
             theme:theme,
             label:"job_name",
-            value:'job_name',
+            value:'job_id',
             caption:'Select Job Category',
             list:categories,
             selectedValue: category, 
             pickerAction:(val:any) => setCategory(val)})}
 
         <RenderTaggedInput
-        maxLength={200}
+        maxLength={300}
           onBlur={()=>setFocus('')}
           onFocus={()=>setFocus('desc')}
           taggedInputContainerStyles={[globalstyles.columnCenter,{
@@ -283,16 +308,17 @@ const JobPostCreateScreen = () => {
             value:'label',
             caption:'Select Required Experience',
             list:[ 
-              {label:'Entry Level'},
-              {label: 'Mid Level'},
-              {label:'Senior'}
+              {label:'Entry level'},
+              {label: 'Mid level'},
+              {label:'Senior'},
+              {label:'None'}
             ],
             selectedValue: experience_level, 
             pickerAction:(val:any) => setExperience_level(val)})}
        
        
         <RenderTaggedInput
-          maxLength={25}
+          maxLength={50}
           onBlur={()=>setFocus('')}
           onFocus={()=>setFocus('sal')}
           taggedInputContainerStyles={{
@@ -307,17 +333,26 @@ const JobPostCreateScreen = () => {
           errorMessage={errors.salary_range ? errors.salary_range : '' }
         />
         
-        {RenderButtonRow({
-              buttonStyles:[globalstyles.row,{alignSelf:'center',
-                borderWidth:1,borderColor:'green',
-                padding:20,marginVertical:10,gap:10}],
-              action:() => setOpenDate(!openDate),
-              button_text: `Deadline date ${deadline_date? formatDate(deadline_date):''}`,
-              Icon:MaterialIcons,
-              buttonTextStyles:[{color:theme.text,fontSize:16,fontWeight:'600'}],
-              icon_name:"date-range",
-              icon_color:"green"
-        })}
+
+   <View style={[globalstyles.row, {alignSelf:'center',
+          width:'80%',
+        marginVertical:5,gap:10}]}>
+   <Text style={{color:theme.text}}>Deadline Date</Text>
+   <Pressable 
+    onPress={()=>{deadline_date == null && setDeadlineDate(new Date()) ; setOpenDate(true)} }
+    style={[globalstyles.row,{gap:10}]}>
+      
+        <MaterialIcons name='date-range' size={22} color={'green'} />
+        <Text style={{color:'green'}}> {deadline_date? formatDate(deadline_date):''}</Text>
+    </Pressable>
+      
+      {deadline_date &&
+      <Pressable onPress={()=>setDeadlineDate(null)}>
+          <Entypo name="cross" size={21} color='red' />
+      </Pressable>
+      }
+   </View>
+   
 
         {openDate && (
               <DateTimePicker

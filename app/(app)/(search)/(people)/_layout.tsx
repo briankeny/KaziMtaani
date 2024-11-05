@@ -7,7 +7,7 @@ const SearchStackLayout = () => {
   const dispatch = useAppDispatch();
   const [searchQuery, setSearchQuery] = useState<string>('')
   return (
-    <Stack screenOptions={{headerShown:false}}>
+    <Stack screenOptions={{headerShown:true}}>
         <Stack.Screen
           options={{
             header: ()=> 

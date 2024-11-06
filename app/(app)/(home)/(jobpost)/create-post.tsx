@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text,  ScrollView, TouchableOpacity ,Image, Pressable, RefreshControl} from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { SafeAreaView, View, Text,  ScrollView, TouchableOpacity ,Image, Pressable, RefreshControl, Dimensions} from 'react-native';
 import { useGetResourceMutation, usePostFormDataMutation } from '@/kazisrc/store/services/authApi';
 import { useAppDispatch, useSelector } from '@/kazisrc/store/store';
 import { globalstyles } from '@/kazisrc/styles/styles';
@@ -9,17 +9,21 @@ import Toast from '@/kazisrc/components/Toast';
 import RenderPicker from '@/kazisrc/components/RenderPicker';
 import { validationBuilder } from '@/kazisrc/utils/validator';
 import { formatDate, imageAndBodyConstructor, pickImage, randomKeyGenerator, removeSpace} from '@/kazisrc/utils/utils';
-import { Entypo, MaterialIcons } from '@expo/vector-icons';
+import { Entypo, FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { RenderButtonRow } from '@/kazisrc/components/Buttons';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from 'expo-router';
+import BottomSheet from '@gorhom/bottom-sheet';
+import MapViewer from '@/kazisrc/components/MapViewer';
+import MapMarker from '@/kazisrc/components/MapMarker';
+import BottomSheetDrawer from '@/kazisrc/components/BottomSheetDrawer';
 
 const JobPostCreateScreen = () => {
   const dispatch = useAppDispatch();
   const [getData, {data}] = useGetResourceMutation();
   const [postData, { isLoading, isSuccess, error, isError }] = usePostFormDataMutation();
   const { theme, isNightMode } = useSelector((state: any) => state.theme);
-  const {userData} = useSelector((state:any)=>state.auth)
+  const {userData,myLocation} = useSelector((state:any)=>state.auth)
   // Form state variables
   const [errors,setErrors] = useState <any>({})
   const [focused,setFocus]  = useState<string>('')
@@ -51,12 +55,33 @@ const JobPostCreateScreen = () => {
     }, 2000);
   }, [router]);
 
+  const { width, height } = Dimensions.get('window');
+  const ASPECT_RATIO = width / height;
+  const LATITUDE_DELTA = 0.5; 
+  const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
-  const handleMapPress = () => {
-    // const { latitude, longitude } = event.nativeEvent.coordinate;
-    // setLocation({ latitude, longitude });
+  const [openMaps, setOpenMaps] = useState<boolean>(false);
+  
+  const [jobLongitude , setJobLongitude] = useState<any>(null)
+  const [jobLatitude ,setJobLatitude] = useState<any>(null)
+
+  const [userLocation, setUserLocation] = useState<any>({
+    latitude: -1.5256749,
+    longitude: 36.9396504,
+    latitudeDelta: LATITUDE_DELTA,
+    longitudeDelta: LONGITUDE_DELTA,
+  });
+
+  const handleMapPress = (event:any) => {
+    const { latitude, longitude } = event["nativeEvent"].coordinate
+    console.log('found',latitude,longitude)
+      latitude && setJobLatitude(latitude)
+      longitude && setJobLongitude(longitude)
     };
 
+    useEffect(()=>{
+      console.log(jobLatitude,jobLongitude)
+    },[jobLatitude,jobLongitude])
 
     async function fetchCategories() {
       try{
@@ -140,6 +165,8 @@ const JobPostCreateScreen = () => {
         const validated:any = validationBuilder(rules)
         deadline_date !== null ? validated['deadline_date'] = formatDate(deadline_date) : null
         category !== null ? validated['category'] = category : null
+        jobLatitude !== null ? validated['latitude'] = jobLatitude : null
+        jobLongitude !== null ? validated['longitude'] = jobLongitude : null
         const images = []
         if(newImage){
               let img ={   
@@ -158,7 +185,7 @@ const JobPostCreateScreen = () => {
             status: "success",
             content: "Your job has been posted!",
           })
-          router.replace('/(app)/(home)/(jobpost)')    
+          router.navigate('/(app)/(home)/(jobpost)')    
         }
       }
       catch(error:any){
@@ -166,6 +193,7 @@ const JobPostCreateScreen = () => {
       }
     }
   };
+
 
 
   useEffect(()=>{
@@ -181,6 +209,24 @@ const JobPostCreateScreen = () => {
      content: "Oops! An Error Occurred while trying to submit job post!",
    })
  },[isError])
+
+ useEffect(() => {
+  if (myLocation && myLocation.latitude) {
+    const latitude = myLocation.latitude
+      ? parseFloat(myLocation.latitude)
+      : -1.5256749;
+    const longitude = myLocation.longitude
+      ? parseFloat(myLocation.longitude)
+      : 36.9396504;
+
+    setUserLocation({
+      latitude: latitude,
+      longitude: longitude,
+      latitudeDelta: LATITUDE_DELTA,
+      longitudeDelta: LONGITUDE_DELTA,
+    });
+  }
+},[])
 
   return (
     <SafeAreaView style={[globalstyles.safeArea, { backgroundColor: theme.background }]}>
@@ -287,6 +333,86 @@ const JobPostCreateScreen = () => {
           errorMessage={errors.location ? errors.location : ''}
         />
         
+        <TouchableOpacity
+          onPress={() =>setOpenMaps(!openMaps)}
+          style={[
+            globalstyles.row,
+            {
+              borderColor: "red",
+              gap: 23,
+              borderWidth: 1,
+              marginVertical: 20,
+              borderRadius: 20,
+              paddingVertical: 5,
+              width: "80%",
+              justifyContent: "center",
+              alignSelf: "center",
+            },
+          ]}
+        >
+          <Text
+            style={{
+              color: theme.text,
+              alignSelf: "center",
+              fontWeight: "600",
+            }}
+          >
+            Choose Location on the Map
+          </Text>
+
+          <FontAwesome name="map-marker" size={24} color="red" />
+        </TouchableOpacity>
+
+        {openMaps &&
+            <View
+            style={{
+              width: Dimensions.get('window').width-20,
+              height: Dimensions.get("window").height-200,
+              borderRadius: 20,
+              alignSelf:'center',
+              zIndex:1,
+              overflow: "hidden",
+            }}
+          >
+            <Text style={{color:theme.text,textAlign:'center',
+              fontFamily:'Nunito-Bold',
+              padding:20}}>
+              
+              **Zoom on The Map and Tap To Select A Point 
+            </Text>
+             <MapViewer
+              handleMapPress={handleMapPress}
+              initialRegion={userLocation}
+            >
+               {/* {userLocation && 
+                  <MapMarker
+                    latitude={userLocation.lot}
+                    longitude={jobLatitude}
+                    title={title}
+                    industry={''}
+                    description={description}
+                    theme={theme}
+                    imageSource={image}
+                    // onPress={()=>goToScreen(item)}
+                  />
+                } */}
+              {jobLatitude && 
+                  <MapMarker
+                    latitude={jobLatitude}
+                    longitude={jobLongitude}
+                    title={title}
+                    industry={''}
+                    description={description}
+                    theme={theme}
+                    imageSource={image}
+                    // onPress={()=>goToScreen(item)}
+                  />
+                }
+                
+        </MapViewer>
+          </View>
+        }
+
         {RenderPicker({
             theme:theme,
             label:"label",
@@ -347,7 +473,7 @@ const JobPostCreateScreen = () => {
     </Pressable>
       
       {deadline_date &&
-      <Pressable onPress={()=>setDeadlineDate(null)}>
+      <Pressable onPress={()=>setOpenMaps(true)}>
           <Entypo name="cross" size={21} color='red' />
       </Pressable>
       }
@@ -385,6 +511,8 @@ const JobPostCreateScreen = () => {
           style={[{color:'white',paddingVertical:5,textAlign:'center',fontWeight:'500'}]}>Create Post</Text>
         </TouchableOpacity>
 
+        
+   
       <Toast
           visible={openModal}
           status={modalStatus}

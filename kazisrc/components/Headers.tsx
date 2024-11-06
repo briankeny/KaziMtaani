@@ -360,21 +360,16 @@ export function MyDrawer(props: any) {
       try {
         const data = { refresh: refreshToken };
         const resp = await logoutUser({ data: data, endpoint: "/logout/" }).unwrap()
-        resp && dispatch(setAuth(false));
+        if(resp)
+        dispatch(setAuth(false));
+        props?.navigation?.closeDrawer()
         router.replace('/')
-      } catch (error) {
-       
+      } catch (error) {       
         dispatch(setAuth(false));
         router.replace('/')
-        
       }
     }
   };
-
-  useEffect(()=>{
-    if(!authentication)
-      router.push('/')
-  },[authentication])
 
   return (
     <SafeAreaView
@@ -544,3 +539,57 @@ export function MyDrawer(props: any) {
     </SafeAreaView>
   );
 }
+
+
+export function ConversationHeader(){
+  const {currentReceiver} =  useSelector((state:any)=>state.messages)
+  const {theme} = useSelector((state:any)=>state.theme)
+   
+  return(
+    <SafeAreaView
+    style={[
+      { backgroundColor: theme.card, 
+        paddingTop: StatusBar.currentHeight, },
+    ]}
+  >
+    <View style={[globalstyles.rowWide,{padding:20}]}>
+
+          <TouchableOpacity
+           
+          onPress={()=>router.back()}
+           >
+               <Ionicons name="arrow-back" size={24} color={theme.text} />
+          </TouchableOpacity>
+
+          <Text style={{color:theme.text, fontFamily:'Poppins-Regular', fontSize:20}}>
+              {currentReceiver.full_name.split(0,15)}
+          </Text>
+
+          <View
+          style={{
+            backgroundColor: "gray",
+            height: 30,
+            width: 30,
+            overflow: "hidden",
+            borderRadius: 15,
+          }}
+        >
+          {currentReceiver?.profile_picture ? (
+            <Image
+              style={{
+                resizeMode: "center",
+                height: 30,
+                width: 30,
+                borderRadius: 15,
+              }}
+              source={{ uri: currentReceiver.profile_picture }}
+            />
+          ) : (
+            <CustomUserAvatar name={currentReceiver.full_name} />
+          )}
+        </View>
+
+    </View>
+ </SafeAreaView>
+  )
+} 

@@ -14,7 +14,7 @@ export function Checkmark ({
     size=24,tier='',color='gray',issuperuser=false,
     checkStyles}:CheckmarkProps){
 
-    const showverified = tier ? true :false
+    const showverified = tier || issuperuser ? true :false
 
     if(!showverified){
       return null
@@ -24,8 +24,8 @@ export function Checkmark ({
      <MaterialIcons name="verified"
        style={[
         issuperuser && {color:'gray'},
-        tier == 'tier_one' && {color:'orange'},
-        tier == 'tier_two' && {color:'#448EE4'},
+        tier == 'tier_one' && {color:'#448EE4'},
+        tier == 'tier_two' && {color:'rgba(230, 115, 0,0.7)'},
         tier == 'tier_three' && {color:'rgba(0,105,0.1)'},
         checkStyles
        ]}

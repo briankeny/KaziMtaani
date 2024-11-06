@@ -10,17 +10,16 @@ interface MapViewerProps {
     latitudeDelta: any,
     longitudeDelta: any,
   };
+  handleMapPress?:(e:any)=>void;
 }
 
-export default function MapViewer({children,initialRegion={
-  latitude: -1.5256749,
-  longitude: 36.9396504,
-  latitudeDelta: 0.1,
-  longitudeDelta: 0.1,
-}}:MapViewerProps) {
+export default function MapViewer({children,
+  initialRegion,handleMapPress
+  }:MapViewerProps) {
   return (
     <View style={styles.container}>
       <MapView 
+       onPress={handleMapPress}
        initialRegion={initialRegion}
         // provider= {PROVIDER_GOOGLE }
       style={styles.map} >

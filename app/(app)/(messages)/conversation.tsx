@@ -5,8 +5,9 @@ import { useAppDispatch } from '@/kazisrc/store/store';
 import { globalstyles } from '@/kazisrc/styles/styles';
 import { dateFormater, imageAndBodyConstructor, pickImage, randomKeyGenerator, removeSpace } from '@/kazisrc/utils/utils';
 import { validationBuilder } from '@/kazisrc/utils/validator';
+import { useGlobalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react'
-import { SafeAreaView, ScrollView, TouchableOpacity,Text, Image, View } from 'react-native'
+import { SafeAreaView, ScrollView, TouchableOpacity,Text, Image, View, FlatList } from 'react-native'
 import { useSelector } from 'react-redux';
 
 
@@ -14,7 +15,8 @@ export default function ChatScreen () {
   const dispatch = useAppDispatch();
   const {conversation,messages} = useSelector((state:any)=>state.messages)
   const {userData} = useSelector((state:any)=>state.auth)
-  const {chat_id} = conversation
+  const params:any =  useGlobalSearchParams()
+  const {chat_id} = params
   const { theme, isNightMode } = useSelector((state: any) => state.theme);
   const [getData, { isLoading:getLoading,isError:existsGetError, error:getError}] = useGetResourceMutation();
   const [postData ,{isLoading,isSuccess,error,isError}] = usePostFormDataMutation();
@@ -29,8 +31,8 @@ export default function ChatScreen () {
   const [imageType,setImageType] = useState<string|any>('png')
 
   function findReceiver(){
-    const to =  conversation?.participants ? conversation.participants.find((item:any)=>item != userData.user_id) : {}
-    setReceiver(to)
+    const to = conversation.participants.filter((item:any)=>item != userData.user_id)
+    to.length > 0 ? setReceiver(to[0]) : null
   }
 
 
@@ -40,7 +42,7 @@ export default function ChatScreen () {
   }
 
   async function sendMessage(){
-    if(isLoading){  
+    if(!isLoading){  
       try{
         const rules =[
           {
@@ -49,12 +51,7 @@ export default function ChatScreen () {
             minLenght:0
           },
           {
-            conversation:chat_id,
-            type :'number',
-            minLength:0
-          },
-          {
-            receiver:receiver,
+            receiver:receiver.user_id,
             type:'number',
             minLength:0
           },
@@ -64,7 +61,8 @@ export default function ChatScreen () {
             minLength:0
           }
         ]
-        const validated = validationBuilder(rules)
+        const validated:any = validationBuilder(rules)
+        chat_id ? validated['conversation'] = chat_id : null
         const images = []
         if (imageSelected){
           const img = {
@@ -75,16 +73,16 @@ export default function ChatScreen () {
           images.push(img)
         }
         const dataToSubmit =imageAndBodyConstructor({content:validated,images:images,uploadname:["media"]});
-        const resp = await postData({data:dataToSubmit,endpoint:'/messages/'}).unwrap()
+        console.log(dataToSubmit)
+        const resp = await postData({data:dataToSubmit,endpoint:'/new-message/'}).unwrap()
         if(resp){
-          const uploaded = resp?.data ? resp.data : validated 
-          const latest = [...messages,resp.data]
-          dispatch(setMessages([...messages,validated]))
+          const id = resp.id
+          fetchMessages(id)
         }
       }
       catch(err:any){
-
         setError(err)
+        console.log(err)
       }
     }
   }
@@ -126,7 +124,6 @@ export default function ChatScreen () {
   }
 
 
-
   useEffect(()=>{
     if(chat_id){
       fetchMessages(chat_id)
@@ -142,7 +139,7 @@ export default function ChatScreen () {
     return(
       <TouchableOpacity
       style={
-        [message?.sender?.user_id ===  userData.user_id &&{alignSelf:'flex-end'},
+        [ message?.sender?.user_id ===  userData.user_id &&{alignSelf:'flex-end'},
         {
         backgroundColor: theme.card,
         elevation:2,
@@ -162,7 +159,7 @@ export default function ChatScreen () {
           <Image
           style={{
             width:'100%',
-            aspectRatio:2/3
+            aspectRatio:4/3
           }}
           source={{uri:message.image}}
           />
@@ -193,22 +190,22 @@ export default function ChatScreen () {
   return (
     <SafeAreaView
     style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
-        <ScrollView>
-          
-          { messages &&
-            messages.length > 0 ? 
-            messages.map((item:any,index:number)=>{
+        {messages && messages.length > 0 ?
+          <FlatList
+          data={messages}
+          renderItem={
+            ({item,index})=>{
               const {dat, time} = dateFormater(item.timestamp)
               return(
                 <MessageComponent
                 key={index}
                 message={item}
-                time=''
+                time={time}
                 />
               )
             }
-            )
-            :
+          }
+          />:
             <View style={[globalstyles.columnCenter,{height:'100%'}]}>
               <Text style={{color:theme.text}}>
                 0 messages found
@@ -216,11 +213,12 @@ export default function ChatScreen () {
             </View>
           }
           
-          
+       
           <MessageInput
             onFocus ={()=>setFocus('msg')}
             onBlur={()=>setFocus('')} 
             InputViewStyles={{borderColor: focused == 'msg'? 'green' : theme.color
+            ,position:'absolute', bottom:10
             }}
             onChangeText = {(val)=>setContent(val)} 
             onSubmit = {sendMessage} 
@@ -232,7 +230,7 @@ export default function ChatScreen () {
             maxLength={200} 
             theme={theme}
           />
-        </ScrollView>
+      
       </SafeAreaView>
   )
 }

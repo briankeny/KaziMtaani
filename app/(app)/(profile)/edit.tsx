@@ -51,7 +51,7 @@ export default function EditAccountScreen() {
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
-      router.replace("/(app)/(profile)/edit");
+       router.back();
     }, 2000);
   }, [router]);
 
@@ -137,7 +137,7 @@ export default function EditAccountScreen() {
           content: "Your Profile Has Been Updated!",
         })
         resp ? dispatch(setUser(resp)) : null
-        router.replace("/(app)/(profile)/");
+        router.back()
       }
     } catch (error: any) {
       setErros(error)
@@ -151,7 +151,7 @@ export default function EditAccountScreen() {
             dispatch: dispatch,
             header: "Error!",
             status: "error",
-            content: "Incorrect Credentials Provided!",
+            content: "Could not update profile please try again later!",
           })
     }
     },[isError])

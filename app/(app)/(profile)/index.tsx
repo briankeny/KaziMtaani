@@ -25,7 +25,7 @@ export default function UserProfileScreen () {
       setRefreshing(true);
       setTimeout(() => {
         setRefreshing(false);
-        router.replace("/(app)/(profile)");
+        router.replace('/(app)/(profile)')
       }, 2000);
     }, [router]);
   

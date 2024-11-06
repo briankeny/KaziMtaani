@@ -76,7 +76,7 @@ export default function EditSectionScreen (){
                   content: "Your new profile information has been updated!",
                 })
               }
-             router.replace('/(app)/(profile)')
+             router.back()
           }
           catch(error:any){
            setErros(error)

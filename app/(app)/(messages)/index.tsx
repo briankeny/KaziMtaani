@@ -24,7 +24,7 @@ const ConversationsScreen = () => {
       setRefreshing(true);
       setTimeout(() => {
         setRefreshing(false);
-        router.replace("/(app)/(messages)");
+         fetchMessages()
       }, 2000);
     }, [router]);
     
@@ -73,7 +73,9 @@ const ConversationsScreen = () => {
    
     async function fetchMessages() {
       try{
-         await getUserData({endpoint:'/chats/'})
+        const resp = await getUserData({endpoint:'/chats/'}).unwrap()
+        if(resp)
+          dispatch(setConvos(data.results)) 
       }
       catch(error:any){
       }
@@ -89,10 +91,6 @@ const ConversationsScreen = () => {
       fetchMessages()
     },[])
   
-    useEffect(()=>{
-      isSuccess && dispatch(setConvos(data.results)) 
-    },[isSuccess])
-
 
 
     function ConversationRow({ item,handleRowPress,participant,time,date}:any){

@@ -37,7 +37,7 @@ const MyJobReviewsScreen = () => {
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
-      router.replace("/(app)/(home)/my-reviews");
+      fetchReviews()
     }, 2000);
   }, [router]);
 
@@ -258,7 +258,7 @@ export function JobCardReview({item, theme, dat ,time}:any){
 
   return(
     <TouchableOpacity
-    onPress={()=>router.replace(
+    onPress={()=>router.push(
      {pathname: '/(app)/(search)/(jobs)/job-profile',
        params:{post_id:item.post_id}
      })}

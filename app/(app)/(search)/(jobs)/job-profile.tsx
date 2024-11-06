@@ -39,7 +39,7 @@ export default function JobProfileScren() {
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
-      router.replace("/(app)/(jobs)/job-profile");
+      fetchJobPost();
     }, 2000);
   }, [router]);
 
@@ -211,7 +211,7 @@ export default function JobProfileScren() {
       isLoading ? 
       <Loading/>
        :
-       isSuccess && jobpost.post_id ?
+       isSuccess  && jobpost.post_id &&
       <ScrollView
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -222,7 +222,7 @@ export default function JobProfileScren() {
       <View style={[globalstyles.rowEven,{top:40, position:'absolute',width:'100%',zIndex:1}]}>
        
       <Pressable 
-      onPress={()=>router.replace('/(app)/(search)')}>
+      onPress={()=>router.back()}>
         <AntDesign name="back" size={30} color={'#fff'} />
        </Pressable>
        
@@ -313,10 +313,7 @@ export default function JobProfileScren() {
       </View>
       </View>
       </ScrollView>
-      :
-      <NotFound
-        body='Oops! Nothing here...'
-      />  
+     
     }
      { jobpost &&
      jobpost.post_id && <View style={[globalstyles.rowWide,{paddingHorizontal:20,position:'absolute',bottom:0,width:'100%'}]}>
@@ -327,7 +324,8 @@ export default function JobProfileScren() {
               jobapplicants.length}</Text>
             </View>
             
-            {!isLoading && !userIsApplicant && userData.account_type=='recruiter' &&
+            {!isLoading && !userIsApplicant && userData.account_type !='recruiter' &&
+            ! (jobpost.is_read_only) &&
             <TouchableOpacity 
             style={{
               minWidth:150,

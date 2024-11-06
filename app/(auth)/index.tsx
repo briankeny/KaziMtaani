@@ -9,7 +9,7 @@ import { useAppDispatch } from "@/kazisrc/store/store";
 import { globalstyles } from "@/kazisrc/styles/styles";
 import { validationBuilder, checkStrForPurelyNumbers } from "@/kazisrc/utils/validator";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { Redirect, router } from "expo-router";
 import { SafeAreaView, View, TextInput,Text,Image, TouchableOpacity, Pressable } from "react-native";
 import { useSelector } from "react-redux";
 
@@ -89,7 +89,7 @@ const SigninScreen = ({navigation}:any) => {
   }
  
   useEffect(()=>{
-    if (authentication ) router.replace('/(app)')  
+    if (authentication ) <Redirect  href='/(app)' />  
    },[authentication])
  
 

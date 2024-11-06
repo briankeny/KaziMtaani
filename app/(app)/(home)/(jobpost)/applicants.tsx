@@ -104,14 +104,14 @@ export default function  AdminJobselectedItemsScreen () {
             icon_name="user"
             icon_size={24}
             action={()=>{ setOpenBottomSheetDrawer(false);
-              router.push({ pathname:'/(app)/(search)/(people)/', params:
+              router.push({ pathname:'/(app)/(search)/(people)/user-profile', params:
                 {user_id:selectedItem.applicant.user_id}
             })}}
             buttonTextStyles={{color:theme.text,fontWeight:'400',fontSize:18}}
             button_text={`Visit ${selectedItem.applicant.full_name}'s Profile`}
             buttonStyles={[globalstyles.row,{padding:20,gap:10}]}/>
 
-          {['reviewed','declined'].includes(selectedItem.status) &&
+          {['reviewed','declined'].includes(selectedItem.status) && !selectedItem.jobpost.is_read_only &&
           <RenderButtonRow 
             Icon={FontAwesome}
             icon_color={'green'}
@@ -125,7 +125,7 @@ export default function  AdminJobselectedItemsScreen () {
             buttonStyles={[globalstyles.row,{padding:20,gap:10}]}/>
             }
 
-          {['reviewed','accepted'].includes(selectedItem.status) 
+          {['reviewed','accepted'].includes(selectedItem.status) && !selectedItem.jobpost.is_read_only 
           &&
           <RenderButtonRow 
             Icon={FontAwesome}

@@ -7,9 +7,10 @@ import { TabBarIcon } from "@/kazisrc/components/navigation/TabBarIcon";
 export default function TabLayout() {
   const { theme } = useSelector((state: any) => state.theme);
   const { authentication } = useSelector((state: any) => state.auth);
+
   
   useEffect(()=>{
-    !authentication && <Redirect href="/(auth)"/>
+    !authentication && <Redirect href="/"/>
   },[authentication])
    
   return (

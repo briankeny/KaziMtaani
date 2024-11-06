@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
     conversations: [],
     conversation:{},
+    currentReceiver:{},
     messages:[],
     message:{},
     drafts: <any> [],
@@ -32,6 +33,10 @@ const messageSlice = createSlice({
         setConvos : (state, action)=>{
             state.conversations = action.payload
         },
+        setCurrentReceiver : (state, action)=>{
+            state.currentReceiver = action.payload
+        },
+        
         setMessage: (state, action)=>{
             state.message = action.payload
         },
@@ -49,7 +54,9 @@ const messageSlice = createSlice({
 
 
 
-export const {setConvo,setConvos,setDrafts,setMessage,setScrollYMess,setSearch,setSearchTerm,setMessages} = messageSlice.actions
+export const {setConvo,setConvos,setDrafts,setMessage,setScrollYMess,setSearch,setSearchTerm,setMessages,
+    setCurrentReceiver
+} = messageSlice.actions
 
 export default messageSlice.reducer;
 

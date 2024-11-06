@@ -37,7 +37,7 @@ export default function JobPostsScreen() {
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
-      router.replace("/(app)/(search)/");
+      router.replace("/(app)/(search)/(jobs)");
     }, 2000);
   }, [router]);
 
@@ -75,7 +75,6 @@ export default function JobPostsScreen() {
       dispatch(setJobPosts([]));
     }
   }
-
   function goToPost(item: any) {
     dispatch(setJobPost(item));
     router.push({pathname:"/(app)/(jobs)/job-profile",params:{post_id:item.post_id}});
@@ -86,13 +85,14 @@ export default function JobPostsScreen() {
     return true;
   }
 
+
   useEffect(() => {
     isSuccess && dispatch(setJobPosts(data.results));
   }, [isSuccess]);
 
-  useEffect(() => {
-    focused && dispatch(setSearchJSTerm(focused));
-  }, [focused]);
+  // useEffect(() => {
+  //   focused && dispatch(setSearchJSTerm(focused));
+  // }, [focused]);
 
   return (
     <SafeAreaView

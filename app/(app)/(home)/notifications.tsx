@@ -57,7 +57,7 @@ const NotificationsScreen = () => {
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
-      router.replace("/(app)/(home)/notifications");
+      fetchNotifications()
     }, 2000);
   }, [router]);
 

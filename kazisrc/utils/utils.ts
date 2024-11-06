@@ -1,5 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
-import { ToastAndroid } from 'react-native';
+import * as Location from 'expo-location';
 
 interface ImageBodyConstProps {
   images:Array<any>;
@@ -157,7 +157,6 @@ export function formatDate(date:any) {
 
 
 // Date object to string representation
-
 export function formatDateToString(obj:any) {
   
   try {
@@ -179,4 +178,27 @@ export function formatDateToString(obj:any) {
 catch(err){
   return ''
 }
+}
+
+
+
+// Get User Location
+
+ 
+export  async function requestUserLocation() {
+  try {
+    // Request location permissions
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+       throw new Error('Location permission is needed to use map features and functionalities on KaziMtaani')
+    }
+
+    // Get the user's current location
+    let location = await Location.getCurrentPositionAsync({});
+    return {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+    };
+  } catch (error) {
+  }
 }

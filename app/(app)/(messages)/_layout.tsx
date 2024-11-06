@@ -1,12 +1,12 @@
+import { ConversationHeader } from '@/kazisrc/components/Headers';
 import { useSelector } from '@/kazisrc/store/store';
 import { Redirect, Stack } from 'expo-router'
 import React, { useEffect } from 'react'
 
 const StackLayout = () => {
   const { theme } = useSelector((state: any) => state.theme);
- 
   const {authentication}  = useSelector((state:any)=>state.auth)
-   
+ 
   useEffect(()=>{
     !authentication && <Redirect href="/"/>
   },[authentication])
@@ -34,7 +34,11 @@ const StackLayout = () => {
 
         }}
         name='index'/>
-        <Stack.Screen name='conversation'/>
+        <Stack.Screen 
+        options={{
+          header:()=> <ConversationHeader />
+        }}
+        name='conversation'/>
    </Stack>
   )
 }

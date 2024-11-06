@@ -4,7 +4,6 @@ import { HelloWave } from "@/kazisrc/components/HelloWave";
 import MapMarker from "@/kazisrc/components/MapMarker";
 import MapViewer from "@/kazisrc/components/MapViewer";
 import Toast from "@/kazisrc/components/Toast";
-import { jobMarker, userMarker } from "@/kazisrc/images/images";
 import { useGetResourceMutation } from "@/kazisrc/store/services/authApi";
 import { setJobPosts } from "@/kazisrc/store/slices/jobsSlice";
 import { clearModal } from "@/kazisrc/store/slices/modalSlice";
@@ -33,15 +32,18 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 
+
 export default function HomeScreen() {
   const dispatch = useAppDispatch()
   const { theme} = useSelector((state: any) => state.theme);
+
   const {authentication} = useSelector((state:any)=>state.auth)
   const {jobposts} = useSelector((state:any)=>state.jobs);
-  const { userData} = useSelector((state: any) => state.auth);
+  const { userData,myLocation} = useSelector((state: any) => state.auth);
   const [analytics, setAnalytics] = useState<any | null>(null);
-  const [getData, { isLoading:getLoading, isError:existsGetError, error:getError, isSuccess:getSuccess }] =
-    useGetResourceMutation();
+
+  const [getUserData, { isLoading: userLoading, data: usersData }] = useGetResourceMutation({ fixedCacheKey: "people_search" });
+  const [getData, { isLoading:getLoading, isError:existsGetError, error:getError, isSuccess:getSuccess }] = useGetResourceMutation({fixedCacheKey:'my_jobs'});
   
   const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
       (state: any) => state.modal
@@ -52,10 +54,41 @@ export default function HomeScreen() {
       return true;
     }
 
-  const bottomSheetRef = useRef<BottomSheet>(null);
-  const [openBottomSheetDrawer, setOpenBottomSheetDrawer] = useState(false);
-  const snapPoints = useMemo(() => ["25%", "50%", "75%", "100%"], []);
-  const [getJobsData, {isLoading, isError, error, isSuccess }] = useGetResourceMutation({fixedCacheKey:'my_jobs'});
+  const [getJobsData, {isLoading, isError, error, isSuccess }] = useGetResourceMutation({fixedCacheKey:'my_analytics'});
+
+  const [people,setPeople] = useState<any>([])
+  const [mapsData,setMapsData] = useState<any>([])
+
+  const { width, height } = Dimensions.get('window');
+  const ASPECT_RATIO = width / height;
+  const LATITUDE_DELTA = 0.8; //Very high zoom level
+  const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+  
+  const [userLocation,setUserLocation] = useState<any>({
+    latitude: -1.5256749,
+    longitude: 36.9396504,
+    latitudeDelta: LATITUDE_DELTA,
+    longitudeDelta: LONGITUDE_DELTA,
+  })
+
+  useEffect(() => {
+    if (myLocation && myLocation.latitude) {
+      const latitude = myLocation.latitude
+        ? parseFloat(myLocation.latitude)
+        : -1.5256749;
+      const longitude = myLocation.longitude
+        ? parseFloat(myLocation.longitude)
+        : 36.9396504;
+
+      setUserLocation({
+        latitude: latitude,
+        longitude: longitude,
+        latitudeDelta: LATITUDE_DELTA,
+        longitudeDelta: LONGITUDE_DELTA,
+      });
+    }
+  }, [myLocation]);
+
 
   async function fetchJobs() {
       try {
@@ -67,7 +100,17 @@ export default function HomeScreen() {
       } catch (error: any) {}
   }
 
+  async function fetchPeople() {
+    try {
+      const resp = await getUserData({ endpoint: "/users/" }).unwrap();
+      if (resp) {
+        const data = resp.results ? resp.results : [];
+         setPeople(data)
+      }
+    } catch (error: any) {}
+  }
 
+  
   async function fetchDataAnalytics() {
     try {
       const resp = await getJobsData({ endpoint: "/analytics/" }).unwrap();
@@ -77,11 +120,6 @@ export default function HomeScreen() {
     } catch (error) {}
   }
 
-  function mapAction() {
-    // const { latitude, longitude } = event.nativeEvent.coordinate;
-    // console.log('Choose location',latitude,longitude)
-  
-  }
 
   function goToJobs(){
     if(userData.account_type == 'jobseeker') {
@@ -102,9 +140,31 @@ export default function HomeScreen() {
  },[authentication])
 
 
+ useEffect(()=>{
+   people &&  userData.account_type == 'recruiter' && setMapsData(people)
+  jobposts &&   userData.account_type != 'recruiter' &&  setMapsData(jobposts)
+ },[people,jobposts])
+
+
+ function goToScreen(item:any){
+   if(userData.account_type == 'recruiter'){
+   router.push({pathname: '/(app)/(search)/(people)/user-profile',
+    params:item.user_id
+   }) 
+   }
+   else{
+   router.push({
+    pathname: '/(app)/(search)/(jobs)/job-profile',
+    params: item.post_id
+   })
+  }
+ }
+
+
   useEffect(()=>{
     fetchJobs()
     fetchDataAnalytics()
+    fetchPeople()
   },[])
 
   const Menu = ({
@@ -201,7 +261,13 @@ export default function HomeScreen() {
               fontFamily: "Poppins-Bold",
             }}
           >
-            Find Your Dream Job Here
+            {userData.account_type == 'recruiter'
+              ? 'Find Professionals Here'
+              :'Find  Your Dream Job Here'
+            }
+
+
+            
           </Text>
         </View>
 
@@ -373,7 +439,7 @@ export default function HomeScreen() {
             const { dat, time } = dateFormater(item?.date_posted);
             return (
               <TouchableOpacity
-                 onPress={()=>router.replace(
+                 onPress={()=>router.push(
                   {pathname: '/(app)/(search)/(jobs)/job-profile',
                     params:{post_id:item.post_id}
                   })}
@@ -593,57 +659,29 @@ export default function HomeScreen() {
             overflow: "hidden",
           }}
         >
-          <MapViewer>
-            {testdata.map((item: any, index: number) => (
-              <MapMarker
-                key={index}
-                mapIcon={userData.account_type == 'recruiter' ? userMarker : jobMarker}
-                location={item.location}
-                title={item.name}
-                description="My Beatufiul"
-                theme={theme}
-                imageSource={item.imageSource}
-                onPress={mapAction}
-              />
-            ))}
-          </MapViewer>
-        </View>
-
-        {openBottomSheetDrawer && (
-          <BottomSheetDrawer
-            index={openBottomSheetDrawer ? 1 : -1}
-            snapPoints={snapPoints}
-            handleClose={() => setOpenBottomSheetDrawer(false)}
-            bottomSheetRef={bottomSheetRef}
-          >
-            <View
-              style={{
-                width: Dimensions.get("window").width,
-                height: Dimensions.get("window").height,
-                alignSelf: "center",
-                borderRadius: 20,
-                overflow: "hidden",
-              }}
-            >
-              <MapViewer>
-                {testdata.map((item: any, index: number) => (
+         <MapViewer
+              // handleMapPress={mapPointPress}
+               initialRegion={userLocation}
+              >
+                {mapsData.length >0 && mapsData.map((item: any, index: number) => (
                   <MapMarker
                     key={index}
-                    location={item.location}
-                    title={item.name}
-                    description="My Beatufiul"
+                    goToProfile={()=>goToScreen(item)}
+                    latitude={item.latitude}
+                    longitude={item.longitude}
+                    title={ userData.account_type == 'recruiter' ?  item.full_name: item.title}
+                    industry={item.industry}
+                    description={ userData.account_type == 'recruiter' ? item.bio :item.description}
                     theme={theme}
-                    imageSource={item.imageSource}
-                    onPress={mapAction}
+                    imageSource={ userData.account_type == 'recruiter' ?  item.profile_picture : item.job_picture}
+                    // onPress={()=>goToScreen(item)}
                   />
                 ))}
               </MapViewer>
-            </View>
-          </BottomSheetDrawer>
-        )}
+        </View>
 
-        <Pressable
-          onPress={() => setOpenBottomSheetDrawer(true)}
+        <TouchableOpacity
+          onPress={() => router.replace('/(app)/(search)')}
           style={[
             globalstyles.row,
             {
@@ -670,7 +708,7 @@ export default function HomeScreen() {
           </Text>
 
           <FontAwesome name="map-marker" size={24} color="red" />
-        </Pressable>
+        </TouchableOpacity>
       </ScrollView>
       <Toast
           visible={openModal}
@@ -682,22 +720,3 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
-
-export const testdata = [
-  {
-    id: 1,
-    name: "John Doe",
-    location: { latitude: -1.5256749, longitude: 36.92189 },
-    imageSource: {
-      uri: "https://images.unsplash.com/photo-1640695186958-470133dee50f?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    }, // Local image
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    location: { latitude: -1.51, longitude: 36.82 },
-    imageSource: {
-      uri: "https://images.unsplash.com/photo-1640695186958-470133dee50f?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    }, // Remote image
-  },
-];

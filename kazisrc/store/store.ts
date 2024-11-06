@@ -14,6 +14,7 @@ import modalReducer, { rendermodal} from "./slices/modalSlice";
 import notificationsReducer from "./slices/notificationSlice";
 import messageSlice from "./slices/messageSlice";
 import jobsSlice from "./slices/jobsSlice";
+import peopleSlice from "./slices/peopleSlice"
 
 import  {authApi} from "./services/authApi";
 
@@ -23,6 +24,7 @@ const rootReducer = combineReducers({
   auth: authReducer,
   theme: themeReducer,
   jobs:jobsSlice,
+  people:peopleSlice,
   modal:modalReducer,
   notifications:notificationsReducer,
   messages:messageSlice,

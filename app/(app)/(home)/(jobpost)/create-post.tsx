@@ -74,14 +74,10 @@ const JobPostCreateScreen = () => {
 
   const handleMapPress = (event:any) => {
     const { latitude, longitude } = event["nativeEvent"].coordinate
-    console.log('found',latitude,longitude)
       latitude && setJobLatitude(latitude)
       longitude && setJobLongitude(longitude)
     };
 
-    useEffect(()=>{
-      console.log(jobLatitude,jobLongitude)
-    },[jobLatitude,jobLongitude])
 
     async function fetchCategories() {
       try{
@@ -422,7 +418,7 @@ const JobPostCreateScreen = () => {
               {label:'Full time'},
               {label: 'Part time'},
               {label:'Contract'},
-              {label:'One Time'}
+              {label:'One time'}
             ],
             selectedValue: employment_type, 
             pickerAction:(val:any) => setEmployment_type(val)})}

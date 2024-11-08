@@ -1,11 +1,6 @@
 import Toast from "@/kazisrc/components/Toast";
-import { logo } from "@/kazisrc/images/images";
 import { useGetResourceMutation } from "@/kazisrc/store/services/authApi";
-import {
-  setJobPost,
-  setJobPosts,
-  setSearchJSTerm,
-} from "@/kazisrc/store/slices/jobsSlice";
+import {setJobPost} from "@/kazisrc/store/slices/jobsSlice";
 import { clearModal } from "@/kazisrc/store/slices/modalSlice";
 import { useAppDispatch } from "@/kazisrc/store/store";
 import { globalstyles } from "@/kazisrc/styles/styles";
@@ -29,7 +24,6 @@ import { useSelector } from "react-redux";
 export default function JobPostsScreen() {
   const dispatch = useAppDispatch();
   const { theme, isNightMode } = useSelector((state: any) => state.theme);
-  const { jobposts } = useSelector((state: any) => state.jobs);
   const [getData, { data, isLoading, isError, error, isSuccess }] =
     useGetResourceMutation({ fixedCacheKey: "jobs_search" });
   const [refreshing, setRefreshing] = React.useState(false);
@@ -45,6 +39,7 @@ export default function JobPostsScreen() {
     (state: any) => state.modal
   );
 
+  const [jobposts, setJobPosts] = useState([]) 
   const [location, setLocation] = useState("");
   const [salary_range, setSalary] = useState("");
   const [job_type, setJobType] = useState("");
@@ -70,9 +65,9 @@ export default function JobPostsScreen() {
           cleaned.push(item);
         }
       });
-      dispatch(setJobPosts(cleaned));
+      setJobPosts(cleaned);
     } catch (err) {
-      dispatch(setJobPosts([]));
+    setJobPosts([]);
     }
   }
   function goToPost(item: any) {
@@ -87,7 +82,7 @@ export default function JobPostsScreen() {
 
 
   useEffect(() => {
-    isSuccess && dispatch(setJobPosts(data.results));
+    isSuccess && setJobPosts(data.results);
   }, [isSuccess]);
 
   // useEffect(() => {
@@ -231,7 +226,10 @@ export function JobCard({ item, theme, time, timeposted, dat, goToPost }: any) {
             </View>
           )}
 
-          <View style={[globalstyles.column, { overflow: "hidden" }]}>
+          <Pressable
+          onPress={()=>router.push({pathname:'/(app)/(search)/(people)/user-profile' ,
+             params:{user_id:item.recruiter.user_id}})}
+          style={[globalstyles.column, { overflow: "hidden" }]}>
             <Text
               numberOfLines={2}
               ellipsizeMode="tail"
@@ -247,7 +245,7 @@ export function JobCard({ item, theme, time, timeposted, dat, goToPost }: any) {
             >
               @{item?.recruiter?.username}
             </Text>
-          </View>
+          </Pressable>
         </View>
 
         <View style={[globalstyles.column]}>

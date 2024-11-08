@@ -19,7 +19,7 @@ import {
 import { useSelector } from "react-redux";
 
 const LoginPasswordResetScreen = ({ navigation, route }: any) => {
-  const params = useLocalSearchParams();
+  const params = useGlobalSearchParams();
   const dispatch = useAppDispatch();
   const { theme, isNightMode } = useSelector((state: any) => state.theme);
 
@@ -44,12 +44,15 @@ const LoginPasswordResetScreen = ({ navigation, route }: any) => {
       try {
         const rules = [
           {
-            password: password,
+            new_password: password,
             minLength: 5,
             type: "password",
           },
         ];
-        const data = validationBuilder(rules);
+        const data:any = validationBuilder(rules);
+        const {otp, mobile_number} = params
+        otp ? data['code'] = otp : null
+        mobile_number ? data.push({mobile_number:mobile_number}) : null
         const resp = await postData({
           data: data,
           endpoint: "/password-reset/confirm/",

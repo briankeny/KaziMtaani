@@ -1,6 +1,6 @@
 import { globalstyles } from '../styles/styles';
 import { MaterialIcons, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import React, { Children } from 'react';
 import { View, Text, TextInput, StyleProp, ViewStyle, TextStyle, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RenderButtonRow } from './Buttons';
@@ -213,7 +213,8 @@ interface MessageInputProps {
   InputViewStyles : StyleProp<ViewStyle>;
   editable ?: boolean;
   errorMessage?: string; 
-  theme:any,
+  theme:any;
+  children ?: any
 }
 
 
@@ -221,6 +222,7 @@ export function MessageInput({
   onBlur,
   onChangeText,
   onSubmit,
+  children,
   onAttachDocument,
   onAttachImage,
   onAttachVideo,
@@ -237,7 +239,11 @@ export function MessageInput({
   InputStyles = { textAlign: 'center' },
 }:MessageInputProps){
   return (
-    <View style={[globalstyles.card, globalstyles.rowWide,{width:'100%',backgroundColor:theme.card,paddingVertical:2,marginVertical:0,borderRadius:20},InputViewStyles]}>
+    <View style={[globalstyles.card,{width:'100%',backgroundColor:theme.card,overflow:'hidden',
+      minHeight:40,flex:1,
+    paddingVertical:2,marginVertical:0,borderRadius:20},InputViewStyles]}>
+      {children}
+    <View style={[ globalstyles.rowWide]}>
         {RenderButtonRow({
            buttonStyles:[{marginTop:8}],
               action: onAttachImage,
@@ -277,6 +283,7 @@ export function MessageInput({
             icon_color: theme.text,
             icon_name: 'send'
           })}
+    </View>
     </View>
   )
 }

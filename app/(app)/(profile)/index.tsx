@@ -1,21 +1,20 @@
 import Toast from '@/kazisrc/components/Toast'
 import { logo } from '@/kazisrc/images/images'
 import { useGetResourceMutation } from '@/kazisrc/store/services/authApi'
-import { setUserSections, setUserSkills } from '@/kazisrc/store/slices/authSlice'
 import { clearModal} from '@/kazisrc/store/slices/modalSlice'
 import { useAppDispatch } from '@/kazisrc/store/store'
 import { globalstyles } from '@/kazisrc/styles/styles'
 import { formatDate, formatDateToString } from '@/kazisrc/utils/utils'
 import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons'
 import { router } from 'expo-router'
-import React, { useEffect} from 'react'
+import React, { useEffect, useState} from 'react'
 import { SafeAreaView, View,Image,Text,TouchableOpacity,Pressable, ScrollView, RefreshControl } from 'react-native'
 import { useSelector } from 'react-redux'
 
 export default function UserProfileScreen () {
     const dispatch = useAppDispatch() 
     const { theme} = useSelector((state: any) => state.theme)
-    const { userData ,userSkills,userSections} = useSelector((state: any) => state.auth)
+    const { userData } = useSelector((state: any) => state.auth)
     const [getData,{isLoading: getLoading}] = useGetResourceMutation({fixedCacheKey:'User_Skills'})
     const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
       (state: any) => state.modal
@@ -25,7 +24,8 @@ export default function UserProfileScreen () {
       setRefreshing(true);
       setTimeout(() => {
         setRefreshing(false);
-        router.replace('/(app)/(profile)')
+        fetchUserSections()
+        fetchUserSkills()
       }, 2000);
     }, [router]);
   
@@ -35,13 +35,15 @@ export default function UserProfileScreen () {
       return true
     }
 
+    const [userSkills,setUserSkills] = useState<any>([]);
+    const [userSections ,setUserSections] = useState<any>([]);
     
     async function fetchUserSkills(){
       try{
         const resp =  await getData({endpoint:`/user-skills/?search=${userData.user_id}`}).unwrap()
         if(resp){
           const data = resp?.results ? resp.results : []
-          dispatch(setUserSkills(data))
+          setUserSkills(data)
         }
       }
       catch(error){
@@ -53,7 +55,7 @@ export default function UserProfileScreen () {
         const resp =  await getData({endpoint:`/user-info/?search=${userData.user_id}`}).unwrap()
         if(resp){
           const data = resp?.results ? resp.results : []
-          dispatch(setUserSections(data))
+           setUserSections(data)
         }
       }
       catch(error){

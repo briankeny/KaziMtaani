@@ -18,7 +18,8 @@ import {
   Text,
   Image,
   FlatList,
-  TouchableOpacity
+  TouchableOpacity,
+  RefreshControl
 } from "react-native";
 import { useSelector } from "react-redux";
 
@@ -37,13 +38,25 @@ export default function JobApplicationsScreen() {
     const [openBottomSheetDrawer, setOpenBottomSheetDrawer] = useState(false);
     const snapPoints = useMemo(() => ["25%", "50%", "75%", "100%"], []);
   const [selectedItem, setSelectedItem] = useState<any>({})
+  
+  const [refreshing, setRefreshing] = React.useState(false);
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+       fetchJobAps()
+    }, 2000);
+  }, []);
+  
   async function fetchJobAps() {
     try {
       const resp = await getData({ endpoint:`/job-applications-user/?applicant=${userData.user_id}` }).unwrap();
       if (resp) 
         dispatch(setJobApplications(resp.results));
     } catch (error: any) {}
-  }
+  
+   }
+
 
   function closeModal() {
     dispatch(clearModal());
@@ -128,7 +141,7 @@ export default function JobApplicationsScreen() {
             buttonTextStyles={{color:theme.text,fontWeight:'400',fontSize:18}}
             button_text={"Submit a review :- Give us your feedback"}
             buttonStyles={[globalstyles.row,{padding:20,gap:10}]}/>
-          
+          { !(selectedItem.jobpost.is_read_only)  &&
           <RenderButtonRow 
             Icon={MaterialIcons}
             icon_color="red"
@@ -138,6 +151,7 @@ export default function JobApplicationsScreen() {
             buttonTextStyles={{color:theme.text,fontWeight:'400',fontSize:18}}
             button_text={"Cancel Application :- This action cannot be undone " }
             buttonStyles={[globalstyles.row,{padding:20,gap:10}]}/>
+            }
       </View>
   )
  }
@@ -181,7 +195,7 @@ export default function JobApplicationsScreen() {
             }]}>
               <Text
               style={{color:'#fff',fontFamily:'Poppins-Bold',fontSize:19}}
-              >{item?.jobpost?.recruiter?.full_name.slice(0,1)}</Text>
+              >{item?.jobpost?.recruiter?.full_name?.slice(0,1)}</Text>
             </View>
            
           }
@@ -258,6 +272,10 @@ export default function JobApplicationsScreen() {
       <Loading/>:
       jobapplications && jobapplications.length > 0 ?
       <FlatList
+         
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
         keyExtractor={(item,index) => index.toString()}
         data={jobapplications}
         renderItem={({ item, index }: { item: any; index: number }) => (

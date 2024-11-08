@@ -14,11 +14,11 @@ interface SwiperProps{
   keyboardDismissMode?: any;
   overdrag?: boolean;
   viewPagerStyle?: StyleProp<ViewStyle>;
-  setPage: (index:number)=>void;
+  setPage?: (index:number)=>void;
    orientation?:any;
 }
 
-const Swipper:React.FC<SwiperProps> =  ({children,swipperStyles,initialPage=0,scrollEnabled=true,setPage,
+const Swipper:React.FC<SwiperProps> =  ({children,swipperStyles,initialPage=0,scrollEnabled=true,setPage=undefined,
   onPageSelected,
   viewPagerStyle,
   orientation='horizontal',

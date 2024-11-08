@@ -8,7 +8,7 @@ import {
   Ionicons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import { Redirect, router } from "expo-router";
+import { router } from "expo-router";
 import { useState } from "react";
 import {
   SafeAreaView,
@@ -29,6 +29,7 @@ import { useAppDispatch } from "../store/store";
 import { setTheme } from "../store/slices/themeSlice";
 import { setAuth } from "../store/slices/authSlice";
 import { Checkmark } from "./Checkmark";
+import { removeSpace } from "../utils/utils";
 
 export function SignupHeader() {
   const steps = [{ title: `Step 1` }, { title: `Step 2` }, { title: `Final` }];
@@ -47,7 +48,7 @@ export function SignupHeader() {
       <View
         style={{
           width: "100%",
-          height: 300,
+          height: 200,
           overflow: "hidden",
         }}
       >
@@ -62,7 +63,7 @@ export function SignupHeader() {
           <View key={i} style={[globalstyles.column]}>
             <Text
               style={{
-                color: i + 1 <= authscreen_index ? "#0080ff" : theme.text,
+                color: i + 1 <= authscreen_index ? "#448EE4" : theme.text,
                 fontWeight: "500",
               }}
             >
@@ -71,7 +72,7 @@ export function SignupHeader() {
             <AntDesign
               name={i + 1 <= authscreen_index ? "rightcircle" : "rightcircleo"}
               size={20}
-              color={i + 1 <= authscreen_index ? "#0080ff" : theme.text}
+              color={i + 1 <= authscreen_index ? "#448EE4" : theme.text}
             />
           </View>
         ))}
@@ -239,6 +240,10 @@ export function SearchHeader({
     }
   }
 
+    useEffect(()=>{
+      searchQuery && searchQuery.trim().replace(' ','').length > 0 &&  searchFunction()
+    },[searchQuery])
+
   return (
     <SafeAreaView
       style={{
@@ -360,13 +365,12 @@ export function MyDrawer(props: any) {
       try {
         const data = { refresh: refreshToken };
         const resp = await logoutUser({ data: data, endpoint: "/logout/" }).unwrap()
-        if(resp)
         dispatch(setAuth(false));
         props?.navigation?.closeDrawer()
-        router.replace('/')
+        return  router.replace('/(auth)')
       } catch (error) {       
         dispatch(setAuth(false));
-        router.replace('/')
+        return router.replace('/(auth)')
       }
     }
   };
@@ -488,7 +492,8 @@ export function MyDrawer(props: any) {
         icon_color: "orange",
         icon_size: 21,
       })}
-      {DrawerButtonRow({
+
+      {/* {DrawerButtonRow({
         theme: theme,
         nightmode: isNightMode,
         text: "Settings",
@@ -497,7 +502,7 @@ export function MyDrawer(props: any) {
         icon_name: "settings",
         action: ()=>router.replace('/(app)/(home)'),
         icon_color: "green",
-      })}
+      })} */}
 
       <View style={[{ position: "absolute", bottom: 50, width: "80%" }]}>
         <TouchableOpacity
@@ -541,7 +546,7 @@ export function MyDrawer(props: any) {
 }
 
 
-export function ConversationHeader(){
+export function ConversationHeader(props:any){
   const {currentReceiver} =  useSelector((state:any)=>state.messages)
   const {theme} = useSelector((state:any)=>state.theme)
    
@@ -556,7 +561,7 @@ export function ConversationHeader(){
 
           <TouchableOpacity
            
-          onPress={()=>router.back()}
+          onPress={()=> router.push('/(app)/(messages)')}
            >
                <Ionicons name="arrow-back" size={24} color={theme.text} />
           </TouchableOpacity>

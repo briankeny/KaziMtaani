@@ -45,7 +45,7 @@ export default function  AdminJobselectedItemsScreen () {
       setRefreshing(false);
       fetchJobApplications(post_id)
     }, 2000);
-  }, [router]);
+  }, []);
   
   //Toggle Modal
   function closeModal(){

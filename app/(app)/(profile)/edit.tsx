@@ -1,7 +1,7 @@
 import { RenderButtonRow } from "@/kazisrc/components/Buttons";
 import { TaggedInput } from "@/kazisrc/components/Inputs";
 import { usePatchFormDataMutation } from "@/kazisrc/store/services/authApi";
-import { setLocation, setUser } from "@/kazisrc/store/slices/authSlice";
+import { setUser } from "@/kazisrc/store/slices/authSlice";
 import { rendermodal } from "@/kazisrc/store/slices/modalSlice";
 import { useAppDispatch } from "@/kazisrc/store/store";
 import { globalstyles } from "@/kazisrc/styles/styles";

@@ -8,13 +8,23 @@ import { setPeopleSQuery, setPeopleSTerm } from '@/kazisrc/store/slices/peopleSl
 const SearchStackLayout = () => {
   const dispatch = useAppDispatch();
   const {searchPeopleSQuery,searchPeopleSTerm} = useSelector((state:any)=>state.people)
-  
+  const {theme} = useSelector((state:any)=>state.theme)
   useEffect(()=>{
     dispatch(setPeopleSTerm('full_name'))
   },[])
 
   return (
-    <Stack screenOptions={{headerShown:true}}>
+    <Stack screenOptions={{headerShown:true,
+      headerStyle:{
+        backgroundColor:theme.card
+      },
+      headerTitleStyle:{
+        color: theme.text,
+        fontSize: 21
+      },
+      headerTintColor:theme.text,
+      headerTitleAlign:'center'
+    }}>
         <Stack.Screen
           options={{
             header: ()=> 
@@ -29,7 +39,7 @@ const SearchStackLayout = () => {
         
         name='index' />
         <Stack.Screen
-         options={{headerShown:false}} 
+         options={{headerShown:true , title:'User Account'}} 
         name='user-profile' />
     </Stack>
   )

@@ -49,7 +49,7 @@ export default function JobPostsAdminScreen() {
       setRefreshing(false);
       fetchJobPosts()
     }, 2000);
-  }, [router]);
+  }, []);
 
 
   async function performAction(data:any){
@@ -235,7 +235,7 @@ export default function JobPostsAdminScreen() {
                   backgroundColor: "orange",
                 }}
               >
-                <Text style={{ fontFamily: "Poppins-bold", fontSize: 15 }}>
+                <Text style={{ fontFamily: "Poppins-Bold", fontSize: 15 }}>
                   {userData?.full_name?.slice(0, 1)}
                 </Text>
               </View>

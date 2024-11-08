@@ -14,18 +14,20 @@ type MarkerProps ={
     industry ?: string;
     description ?: string;
     theme:any;
+    person?:boolean;
     imageSource : any ;
     // titleStyle : StyleProp<TextStyle>;
     onPress ?:any;
 }
 
 const MapMarker = ({ latitude=1,
-  goToProfile=undefined,
+  goToProfile=undefined,person,
   longitude=1,theme,title,description,industry,imageSource,mapIcon, onPress=undefined }:MarkerProps) => {
   return (
     <Marker
       coordinate={{ latitude: latitude, longitude:longitude }}
       onPress={onPress}
+      pinColor={person ? 'darkslateblue':'red'}
       // icon={mapIcon}
       style={{flexShrink:3}}
     >
@@ -38,7 +40,7 @@ const MapMarker = ({ latitude=1,
             <View style={{height:20,width:20,
              alignSelf:'center',
               borderRadius:10,
-              backgroundColor:'#0566c7'}}>
+              backgroundColor: person ?'darkslateblue': 'gray'}}>
             </View>
             <Text 
             numberOfLines={2}
@@ -50,13 +52,21 @@ const MapMarker = ({ latitude=1,
               fontFamily:'Poppins-Bold'}}>
                  {title}
             </Text>
+              
             </View>
+            {<View style={{backgroundColor:'rgba(0,105,0,1)',
+                width:20,height:8, borderRadius:20,
+               }}>
+                  <Text style={{color:'#fff', fontWeight:'800',
+                     fontSize:5, textAlign:'center'}}>You</Text>
+               </View>}
           
           {industry &&
-          <Text style={{color:'#222', fontWeight:'600', paddingVertical:5, fontSize:8}}>
+          <Text style={{color:'#222', fontWeight:'600', paddingVertical:2, fontSize:8}}>
               {industry}
           </Text>
           }
+        
           <Text 
            numberOfLines={2}
            ellipsizeMode='tail'

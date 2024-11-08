@@ -33,7 +33,7 @@ const LoginPasswordResetVerifyScreen = () => {
       try{
         const rules =[
           {
-            code:code,
+            otp:code,
             minLength:4,
             type:'number'
           }

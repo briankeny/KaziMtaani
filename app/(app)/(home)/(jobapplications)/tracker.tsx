@@ -47,11 +47,13 @@ export default function JobTrackerScreen(){
                  activeColor={ all_steps.includes(jobApplication.status) ? 'green' :theme.text }
                 />
                 
+                {jobApplication.status != 'declined' &&
                 <BannerItem 
                  status='Accepted'
                  showArrow={false}
                  activeColor={ jobApplication?.status === 'accepted' ? 'green' :theme.text }
                 />
+                }
                 
                  
                 {jobApplication.status == 'declined' &&

@@ -36,7 +36,7 @@ const StackLayout = () => {
         name='index'/>
         <Stack.Screen 
         options={{
-          header:()=> <ConversationHeader />
+          header:(props )=> <ConversationHeader {...props} />
         }}
         name='conversation'/>
    </Stack>

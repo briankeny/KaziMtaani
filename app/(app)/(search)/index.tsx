@@ -30,7 +30,7 @@ export default function SearchScreen() {
 
   const [getUserData, { isLoading: userLoading, data:peopleData }] =
     useGetResourceMutation({ fixedCacheKey: "people_search" });
-  const [getjobsData, { isLoading, data: jobsData }] = useGetResourceMutation({fixedCacheKey:'my_jobs'});
+  const [getjobsData, { isLoading, data: jobsData }] = useGetResourceMutation({fixedCacheKey:'jobs_search'});
   const [getData, { isLoading:getLoading }] = useGetResourceMutation();
   const [categories, setCategories] = useState([])
   const [mapsData, setMapsData] = useState<any>([]);
@@ -40,7 +40,7 @@ export default function SearchScreen() {
  
   const { width, height } = Dimensions.get("window");
   const ASPECT_RATIO = width / height;
-  const LATITUDE_DELTA = 0.8; //Very high zoom level
+  const LATITUDE_DELTA =  2; //Very high zoom level
   const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
   async function fetchCategories() {
@@ -52,6 +52,13 @@ export default function SearchScreen() {
     catch(error:any){
 
     }
+  }
+
+  async function fetchJobs() {
+    try {
+    await getjobsData({ endpoint: `/job-posts/`}).unwrap()
+      
+    } catch (error: any) {}
   }
 
   const [userLocation, setUserLocation] = useState<any>({
@@ -75,6 +82,7 @@ export default function SearchScreen() {
   }
 
   useEffect(()=>{
+    fetchJobs()
     fetchCategories()
   },[])
 
@@ -253,7 +261,7 @@ export default function SearchScreen() {
             style={{
               width: "96%",
               alignSelf:'center',
-              height: Dimensions.get("window").height,
+              height: Dimensions.get("window").height-200,
               borderRadius: 20,
               overflow: "hidden",
             }}
@@ -276,11 +284,29 @@ export default function SearchScreen() {
               handleMapPress={mapPointPress}
               initialRegion={userLocation}
             >
+              {userLocation && userData.account_type == 'jobseeker' &&
+                <MapMarker
+                    latitude={userLocation.latitude}
+                    longitude={userLocation.longitude}
+                    title={userData.full_name}
+                    industry={userData.industry}
+                    description={userData.bio}
+                    theme={theme}
+                    person={true}
+                    imageSource={userData.profile_picture}
+                    // onPress={()=>goToScreen(item)}
+                  />
+                  }
+
                { mapsData&& mapsData.length >0 && mapsData.map((item: any, index: number) => (
                   <MapMarker
                     key={index}
                     latitude={item.latitude}
                     longitude={item.longitude}
+                    person={ 
+                      userData.account_type == 'recruiter' ? 
+                      userData.user_id == item.user_id ? true: false: 
+                      false}
                     title={ userData.account_type == 'recruiter' ?  item.full_name: item.title}
                     industry={item.industry}
                     description={ userData.account_type == 'recruiter' ? item.bio :item.description}

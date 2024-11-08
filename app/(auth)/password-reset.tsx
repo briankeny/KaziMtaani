@@ -40,7 +40,7 @@ const PasswordResetScreen = () => {
             const validated = validationBuilder(rules)
             const resp = await  postData({data:validated,endpoint:'/password-reset/'}).unwrap()
             if(resp){
-              router.push({ pathname:'/(auth)/password-reset-otp', params:validated })
+              router.push({ pathname:'/(auth)/password-reset-otp', params:validated})
             }
         }
         catch(error:any){

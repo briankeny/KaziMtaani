@@ -26,14 +26,13 @@ import {
 } from "@/kazisrc/store/services/authApi";
 import { logo } from "@/kazisrc/images/images";
 import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
-import { setNotifications } from "@/kazisrc/store/slices/notificationSlice";
 import { RenderButtonRow } from "@/kazisrc/components/Buttons";
 import Toast from "@/kazisrc/components/Toast";
 
 const NotificationsScreen = () => {
   const dispatch = useAppDispatch();
   const { theme} = useSelector((state: any) => state.theme);
-  const { notifications} = useSelector((state: any) => state.notifications);
+  
   const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
     (state: any) => state.modal
   );
@@ -52,6 +51,7 @@ const NotificationsScreen = () => {
   const [openBottomSheetDrawer, setOpenBottomSheetDrawer] = useState(false);
   const snapPoints = useMemo(() => [ "10%", "25%", "50%"], []);
   const [notification ,setNotification] = useState<any | object>({})
+  const [notifications, setNotifications] = useState<any>([])
   const [refreshing, setRefreshing] = React.useState(false);
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -81,20 +81,28 @@ const NotificationsScreen = () => {
   async function notificationAction(notification:any){
     try{
    
-      //  const resp = await getData({'endpoint':notification.action}).unwrap()
-      //  if(resp){
+        markNotification(notification?.notification_id)
         switch(notification?.notification_category){
           case 'general':
           break;
+          case 'message':
+            const mid =  parseInt(notification.action)
+            return router.replace({ pathname:'/(app)/(search)/(people)/user-profile' ,params:{ chat_id:mid }})
+            break;
+          case 'review':
+            const revid =  parseInt(notification.action)
+            // router.replace({ pathname:'/(app)/(search)/(people)/user-profile' ,params:{ user_id:userid }})
+            break;
           case 'user':
+            const userid =  parseInt(notification.action)
+            router.push({ pathname:'/(app)/(search)/(people)/user-profile' ,params:{ user_id:userid }})
             break;
-          case 'job':
-            break;
+          case 'jobpost':
+            const post_id =  parseInt(notification.action)         
+            return router.replace({pathname:'/(app)/(search)/(jobs)/job-profile' ,params:{ post_id:post_id }})
           default:
             break;
         }
-        markNotification(notification?.notification_id)
-      //  }
     }
     catch(error){
 
@@ -137,11 +145,8 @@ const NotificationsScreen = () => {
   async function fetchNotifications(){
     try{
       const resp =  await getData({endpoint:`/notifications/`}).unwrap()
-      if(resp){
-        const data = resp?.results ? resp.results : []
-       
-        dispatch(setNotifications(data))
-      }
+      if(resp)
+        setNotifications(resp.results)
     }
     catch(error){
     }
@@ -274,7 +279,7 @@ export function RenderNotification({
       style={[
         globalstyles.column,
         { 
-          paddingHorizontal:20,
+          paddingHorizontal:10,
           borderColor:'#999',
           borderWidth:0.3,
           marginVertical: 1,

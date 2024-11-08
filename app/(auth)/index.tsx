@@ -89,7 +89,7 @@ const SigninScreen = ({navigation}:any) => {
   }
  
   useEffect(()=>{
-    if (authentication ) <Redirect  href='/(app)' />  
+     authentication && router.replace('/(app)')
    },[authentication])
  
 

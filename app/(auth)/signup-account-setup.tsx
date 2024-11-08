@@ -8,7 +8,6 @@ import { useAppDispatch } from '@/kazisrc/store/store';
 import { globalstyles } from '@/kazisrc/styles/styles';
 import { generateRandomUserName } from '@/kazisrc/utils/utils';
 import { validationBuilder } from '@/kazisrc/utils/validator';
-import { AntDesign } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, View, TouchableOpacity,Text, Pressable, ScrollView } from "react-native";
@@ -119,13 +118,14 @@ const SignUpScreen = () => {
     if(isError){
         rendermodal({
             dispatch: dispatch,
-            header: "Error!",
+            header: "Oops!",
             status: "error",
-            content: "An error occurred  while trying to register the accounts",
+            content: "Please try again later",
           })
-
-
+        
+          router.replace('/(auth)/')
         }
+        
     },[isError])
 
     useEffect(()=>{

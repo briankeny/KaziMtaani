@@ -3,13 +3,11 @@ import {
   useGetResourceMutation,
   usePostResourceMutation,
 } from "@/kazisrc/store/services/authApi";
-import { setUserSkills } from "@/kazisrc/store/slices/authSlice";
 import { clearModal, rendermodal } from "@/kazisrc/store/slices/modalSlice";
 import { useAppDispatch } from "@/kazisrc/store/store";
 import { globalstyles } from "@/kazisrc/styles/styles";
 import { validationBuilder } from "@/kazisrc/utils/validator";
 import { Entypo, AntDesign } from "@expo/vector-icons";
-import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Pressable,
@@ -26,7 +24,7 @@ export default function SkillEditScreen() {
   const dispatch = useAppDispatch();
   const [postData, { isLoading: postLoading }] = usePostResourceMutation();
   const { theme, isNightMode } = useSelector((state: any) => state.theme);
-  const { userData, userSkills } = useSelector((state: any) => state.auth);
+  const { userData} = useSelector((state: any) => state.auth);
   const [getData, { isLoading: getLoading }] = useGetResourceMutation({
     fixedCacheKey: "User_Skills",
   });
@@ -35,11 +33,10 @@ export default function SkillEditScreen() {
     (state: any) => state.modal
   );
   const [focused, setFocus] = useState<string>("");
-  const [errors, setErros] = useState<any>({});
-
   // Skills Section
   const [skill_name, setSkillName] = useState<string>("");
   const [skills, setProfSkills] = useState<any | Array<string | any>>([]);
+  const [userSkills,setUserSkills] = useState<any>([])
 
   function closeModal() {
     dispatch(clearModal());
@@ -75,7 +72,7 @@ export default function SkillEditScreen() {
       }).unwrap();
       if (resp) {
         const data = resp?.results ? resp.results : [];
-        dispatch(setUserSkills(data));
+        setUserSkills(data);
       }
     } catch (error) {}
   }
@@ -266,6 +263,7 @@ export default function SkillEditScreen() {
           </View>
         </View>
       </ScrollView>
+       
     </SafeAreaView>
   );
 }

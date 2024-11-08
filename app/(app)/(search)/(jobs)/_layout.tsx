@@ -8,13 +8,24 @@ import { useSelector } from 'react-redux';
 const SearchStackLayout = () => {
   const dispatch = useAppDispatch();
   const {searchJSQuery,searchJSTerm} = useSelector((state:any)=>state.jobs)
+  const {theme} = useSelector((state:any)=>state.theme)
 
   useEffect(()=>{
     dispatch(setSearchJSTerm('title'))
   },[])
 
   return (
-    <Stack screenOptions={{headerShown:true}}>
+    <Stack screenOptions={{headerShown:true,
+        headerStyle:{
+          backgroundColor:theme.card
+        },
+        headerTitleStyle:{
+          color: theme.text,
+          fontSize: 21
+        },
+        headerTintColor:theme.text,
+        headerTitleAlign:'center'
+    }}>
         <Stack.Screen
         options={{
           header : ()=> 
@@ -27,7 +38,7 @@ const SearchStackLayout = () => {
         }}
         name='index' />
         <Stack.Screen name='job-profile' options={{
-          headerShown:false
+          headerShown:true
 ,          title:'Job Profile'
         }} />
     </Stack>

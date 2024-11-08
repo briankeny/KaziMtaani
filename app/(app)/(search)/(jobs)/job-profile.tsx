@@ -14,7 +14,7 @@ import { router, useGlobalSearchParams } from 'expo-router';
 import { Loading } from '@/kazisrc/components/Loading';
 import NotFound from '@/kazisrc/components/NotFound';
 
-export default function JobProfileScren() {
+export default function JobProfileScreen() {
   const dispatch = useAppDispatch();
   const params:any = useGlobalSearchParams()
   const {post_id} = params
@@ -26,7 +26,7 @@ export default function JobProfileScren() {
     (state: any) => state.modal
   );
   const [jobapplicants , setJobApplicants] = useState<any>([])
-  const [userIsApplicant ,setUserIsApplicant] = useState<boolean>(false)
+  const [userIsApplicant ,setUserIsApplicant] = useState<boolean>(true)
   const [getData, {isLoading,isSuccess,isError}] = useGetResourceMutation();
   const [postData, {isLoading:postLoading}] = usePostResourceMutation();
 
@@ -62,13 +62,23 @@ export default function JobProfileScren() {
   }
   }
 
+  async function recordInteraction(){
+    if(!postLoading){
+      try{
+        await postData({data:{user:userData.user_id, jobpost : post_id} , endpoint:'/user-jobpost-interaction/'})
+      }
+      catch(err){
+
+      }
+    }
+  }
+
   async function fetchJobApplications() {
     if(!isLoading){
     try{
-      const resp =  await getData({endpoint:`/job-applications/?jobpost=${post_id}`}).unwrap()
+      const resp =  await getData({endpoint:`/job-applications-user/?jobpost=${post_id}`}).unwrap()
       if(resp){
         setJobApplicants(resp?.results)
-        // dispatch(setJobPost(data))
       }
     }
     catch(error:any){
@@ -84,8 +94,9 @@ export default function JobProfileScren() {
 
   function checkIfUserApplicant(list:any){
     try{
-      const existUser = list.find((item:any)=> item.applicant == userData.user_id) !== undefined
+      const existUser = list.find((item:any)=> item.applicant.user_id == userData.user_id) !== undefined
       existUser && setUserIsApplicant(true)
+      !existUser && setUserIsApplicant(false)
     }
     catch(err){
       setUserIsApplicant(false)
@@ -150,8 +161,12 @@ export default function JobProfileScren() {
   }
 
   useEffect(()=>{
-    post_id && fetchJobPost()
+   if (post_id)
+     fetchJobPost()
+    recordInteraction()
   },[post_id])
+
+
 
   useEffect(()=>{
    favouriteJobs && checkFavJobs(favouriteJobs)
@@ -220,12 +235,6 @@ export default function JobProfileScren() {
       
       <View style={[globalstyles.column]}>
       <View style={[globalstyles.rowEven,{top:40, position:'absolute',width:'100%',zIndex:1}]}>
-       
-      <Pressable 
-      onPress={()=>router.back()}>
-        <AntDesign name="back" size={30} color={'#fff'} />
-       </Pressable>
-       
         <Text
         style={{color:'#fff',fontSize:21,fontFamily:'Poppins-Bold',textAlign:'center'}}
         ellipsizeMode='tail'
@@ -233,13 +242,7 @@ export default function JobProfileScren() {
         >
           {jobpost?.recruiter?.full_name}
         </Text>
-        
-        {jobpost && jobpost.post_id &&
-        <Pressable onPress={toggleFavJobs}>
-          <FontAwesome name={ isFavourite? "heart" :"heart-o"} size={24} color="orange" />
-        </Pressable>
-        }
-        
+     
       </View>
       
      

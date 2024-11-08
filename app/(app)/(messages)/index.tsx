@@ -5,7 +5,7 @@ import BottomSheetDrawer from '@/kazisrc/components/BottomSheetDrawer';
 import { SafeAreaView, ScrollView, View,Text,TouchableOpacity,Image, FlatList, RefreshControl } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useDeleteResourceMutation, useGetResourceMutation } from '@/kazisrc/store/services/authApi';
-import { setConvo, setConvos } from '@/kazisrc/store/slices/messageSlice';
+import {  setConvo, setCurrentReceiver } from '@/kazisrc/store/slices/messageSlice';
 import { useAppDispatch } from '@/kazisrc/store/store';
 import { globalstyles } from '@/kazisrc/styles/styles';
 import { dateFormater} from '@/kazisrc/utils/utils';
@@ -26,13 +26,13 @@ const ConversationsScreen = () => {
         setRefreshing(false);
          fetchMessages()
       }, 2000);
-    }, [router]);
+    }, []);
     
     const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
       (state: any) => state.modal
     ); 
-    const {conversations} = useSelector((state:any)=>state.messages) 
-    const [getUserData, { data, isLoading, isError, error, isSuccess }] = useGetResourceMutation();
+    
+    const [getUserData, { isLoading, isError, error, isSuccess }] = useGetResourceMutation();
     const [deleteData, { isLoading: delLoading }] = useDeleteResourceMutation();
 
     const [convoId, setConvoId] = useState<number | any>(null)
@@ -40,6 +40,7 @@ const ConversationsScreen = () => {
     const bottomSheetRef = useRef<BottomSheet>(null);
     const [openBottomSheetDrawer, setOpenBottomSheetDrawer] = useState(false);
     const snapPoints = useMemo(() => [ "10%", "25%", "50%"], []);
+    const [conversations ,setConvos] = useState<any>([])
 
     function closeModal() {
       dispatch(clearModal());
@@ -48,43 +49,49 @@ const ConversationsScreen = () => {
 
     async function deleteConversation() {
       if (!delLoading) {
+        setOpenBottomSheetDrawer(false)
         try {
-          const resp = await deleteData({
-            endpoint: `/messages/${convoId}/`,
-          }).unwrap();
-          if (resp) {
-            rendermodal({
+           await deleteData({
+            endpoint: `/chat/${convoId}/`,
+          })
+          rendermodal({
               dispatch: dispatch,
               header: "Success!",
               status: "success",
               content: "Conversation has been removed!",
-            });
-          }
+          });
+        fetchMessages()
         } catch (error: any) {
           rendermodal({
             dispatch: dispatch,
             header: "Error!",
             status: "error",
-            content: error.message,
+            content:"We could not perform this action at the moment" ,
           });
         }
       }
     }
    
     async function fetchMessages() {
+      if(!isLoading){
       try{
         const resp = await getUserData({endpoint:'/chats/'}).unwrap()
         if(resp)
-          dispatch(setConvos(data.results)) 
+          setConvos(resp.results)
       }
       catch(error:any){
       }
     }
+    }
 
 
-    function goToScreen(item:any){
+    function goToScreen(item:any,participant:any){
+      dispatch(setCurrentReceiver(participant))
       dispatch(setConvo(item))
-      router.push('/(app)/(messages)/conversation')
+      router.push({
+       pathname:'/(app)/(messages)/conversation',
+       params:{chat_id:item.chat_id}
+      })
     }
 
     useEffect(()=>{
@@ -159,10 +166,7 @@ const ConversationsScreen = () => {
     return (
     <SafeAreaView
       style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
-          {
-
-
-            conversations.length > 0? 
+          { conversations &&  conversations.length > 0? 
 
             <FlatList
               refreshControl={
@@ -174,15 +178,16 @@ const ConversationsScreen = () => {
               renderItem={
                 ({item,index})=>{
                   const  {dat,time} = dateFormater(item.timestamp)
-                  const users = item?.participants?.length > 0 ? item.participants : []
-                  const participant:{} = users.find((i:any)=>i.user_id != userData.user_id )
+                  const users = item.participants
+                  const participant:{} = users.filter((i:any)=> i.user_id != userData.user_id )[0]
+               
                   return(
 
                 <ConversationRow 
                 key={index}
                 item ={item} 
                 date = {dat}
-                handleRowPress = {()=>goToScreen(item)} 
+                handleRowPress = {()=>goToScreen(item,participant)} 
                 theme = {theme}
                 participant = {participant} 
                 time = {time} 
@@ -201,7 +206,7 @@ const ConversationsScreen = () => {
             }
             showsVerticalScrollIndicator={false}>
             <View style={[globalstyles.columnCenter,{height:'100%',paddingTop:'50%'}]}>
-                <Text style={{color:theme.text}}>You have 0 messages</Text>
+                <Text style={{color:theme.text}}>You have 0 chats</Text>
             </View>
             </ScrollView>
       

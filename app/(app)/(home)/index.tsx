@@ -18,6 +18,7 @@ import {
 } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { Redirect, router } from "expo-router";
+import React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   TouchableOpacity,
@@ -29,6 +30,7 @@ import {
   Image,
   Pressable,
   Dimensions,
+  RefreshControl,
 } from "react-native";
 import { useSelector } from "react-redux";
 
@@ -48,6 +50,17 @@ export default function HomeScreen() {
   const { openModal, modalStatus, modalHeader, modalContent } = useSelector(
       (state: any) => state.modal
     );
+
+    const [refreshing, setRefreshing] = React.useState(false);
+    const onRefresh = React.useCallback(() => {
+      setRefreshing(true);
+      setTimeout(() => {
+        setRefreshing(false);
+         fetchJobs()
+         fetchPeople()
+         fetchDataAnalytics()
+      }, 2000);
+    }, [router]);
 
     function closeModal() {
       dispatch(clearModal());
@@ -92,7 +105,7 @@ export default function HomeScreen() {
 
   async function fetchJobs() {
       try {
-        const resp = await getData({ endpoint: "/job-posts/" }).unwrap();
+        const resp = await getData({ endpoint: `/job-posts/?reccommended=True&recruiter=${userData.user_id}` }).unwrap();
         if (resp) {
           const data = resp.results ? resp.results : [];
           dispatch(setJobPosts(data));
@@ -225,7 +238,12 @@ export default function HomeScreen() {
     <SafeAreaView
       style={[globalstyles.safeArea, { backgroundColor: theme.background }]}
     >
-      <ScrollView>
+      <ScrollView 
+       showsVerticalScrollIndicator={false}  
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      >
         <View
           style={[
             globalstyles.columnStart,
@@ -262,8 +280,8 @@ export default function HomeScreen() {
             }}
           >
             {userData.account_type == 'recruiter'
-              ? 'Find Professionals Here'
-              :'Find  Your Dream Job Here'
+              ? 'Find Job Seekers Here'
+              :'Find Your Dream Job Here'
             }
 
 
@@ -337,7 +355,7 @@ export default function HomeScreen() {
                     {
                       color: "#fff",
                       fontWeight: "600",
-                      fontSize: 16,
+                      fontSize: 12,
                       alignSelf: "flex-end",
                     },
                   ]}
@@ -353,7 +371,7 @@ export default function HomeScreen() {
                     {
                       color: "#fff",
                       fontWeight: "600",
-                      fontSize: 16,
+                      fontSize: 12,
                       alignSelf: "flex-end",
                     },
                   ]}
@@ -439,11 +457,9 @@ export default function HomeScreen() {
             const { dat, time } = dateFormater(item?.date_posted);
             return (
               <TouchableOpacity
-                 onPress={()=>router.push(
-                  {pathname: '/(app)/(search)/(jobs)/job-profile',
-                    params:{post_id:item.post_id}
+                onPress={()=>router.push({pathname:'/(app)/(search)/(jobs)/job-profile',
+                  params:{post_id:item.post_id}
                   })}
-
                 key={index}
                 style={[
                   {
@@ -663,12 +679,30 @@ export default function HomeScreen() {
               // handleMapPress={mapPointPress}
                initialRegion={userLocation}
               >
+                {userLocation && userData.account_type == 'jobseeker' &&
+                <MapMarker
+                    latitude={userLocation.latitude}
+                    longitude={userLocation.longitude}
+                    title={userData.full_name}
+                    industry={userData.industry}
+                    description={userData.bio}
+                    theme={theme}
+                    person={true}
+                    imageSource={userData.profile_picture}
+                    // onPress={()=>goToScreen(item)}
+                  />
+                  }
+
                 {mapsData.length >0 && mapsData.map((item: any, index: number) => (
                   <MapMarker
                     key={index}
                     goToProfile={()=>goToScreen(item)}
                     latitude={item.latitude}
                     longitude={item.longitude}
+                    person={ 
+                      userData.account_type == 'recruiter' ? 
+                      userData.user_id == item.user_id ? true: false: 
+                      false}
                     title={ userData.account_type == 'recruiter' ?  item.full_name: item.title}
                     industry={item.industry}
                     description={ userData.account_type == 'recruiter' ? item.bio :item.description}

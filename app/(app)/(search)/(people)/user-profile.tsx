@@ -17,7 +17,7 @@ import {
   StatusBar,
 } from "react-native";
 import { useSelector } from "react-redux";
-import { useGetResourceMutation } from "@/kazisrc/store/services/authApi";
+import { useGetResourceMutation, usePostResourceMutation } from "@/kazisrc/store/services/authApi";
 import { useAppDispatch } from "@/kazisrc/store/store";
 import { globalstyles } from "@/kazisrc/styles/styles";
 import { AntDesign, Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -41,6 +41,7 @@ const UserScreen = () => {
 
   const [getData, { isLoading, isError, error, isSuccess }] =
     useGetResourceMutation();
+  const [postData, { isLoading:postLoading }] = usePostResourceMutation()
   const [person, setPerson] = useState<any>({});
   const [skills, setSkills] = useState<any>([]);
   const [userSections, setUserSections] = useState<any>([]);
@@ -54,7 +55,7 @@ const UserScreen = () => {
 
   function goToMessages(item:any){
     const convo = {
-      chat_id : 0,
+      chat_id : null,
       participants:[userData,item],
       latest_message:''
     }
@@ -71,6 +72,21 @@ const UserScreen = () => {
       } catch (error: any) {}
     }
   }
+
+
+  async function recoredProfileVisit() {
+    if(!postLoading && userData.user_id != user_id){
+    try {
+      const resp = await postData({
+        data:{visitor:userData.user_id ,user:user_id },
+        endpoint: `/profilevisit/`,
+      }).unwrap();
+    
+    } catch (error) {}
+  }
+  }
+
+
   async function fetchUserSkills() {
     try {
       const resp = await getData({
@@ -114,15 +130,11 @@ const UserScreen = () => {
   }
 
   useEffect(() => {
+    if(user_id)
+    fetchUser();
     fetchUserSkills();
-  }, []);
-
-  useEffect(() => {
     fetchUserSections();
-  }, []);
-
-  useEffect(() => {
-    user_id && fetchUser();
+    recoredProfileVisit()
   }, [user_id]);
 
   useEffect(() => {
@@ -184,14 +196,16 @@ const UserScreen = () => {
               />
             ) : (
               <View
-                style={{
+                style={[globalstyles.columnCenter,{
                   height: 60,
                   width: 60,
                   borderRadius: 30,
                   backgroundColor: "gray",
-                }}
+                }]}
               >
-                <Text style={{ fontFamily: "Poppins-bold", fontSize: 15 }}>
+                <Text style={{ fontFamily: "Poppins-Bold", 
+                  color:'#fff',
+                  textAlign:'center',fontSize: 15 }}>
                   {person?.full_name?.slice(0, 1)}
                 </Text>
               </View>
@@ -395,19 +409,12 @@ const UserScreen = () => {
     return (
       <View style={[globalstyles.column, { padding: 2 }]}>
 
-      <View style={[globalstyles.rowWide,{padding:20}]}>
-          <Pressable 
-          onPress={()=>router.back()}>
-            <AntDesign name="back" size={30} color={'gray'} />
-          </Pressable>
-
-
+      <View style={[globalstyles.columnEnd,{padding:20}]}>
         {userData.user_id != person.user_id &&
             <TouchableOpacity onPress={()=>goToMessages(person)} >   
                 <Ionicons name="mail" size={24} color={theme.text} />
             </TouchableOpacity>   
         }
-   
       </View>
 
      <View
@@ -496,7 +503,7 @@ const UserScreen = () => {
         </View>
 
 
-{userData.user_id == person.user_id &&
+    {userData.user_id == person.user_id &&
     <View style={[globalstyles.columnCenter,{ 
       borderRadius:20, width:40 ,height:22,alignSelf:'center',
     backgroundColor:'rgba(31, 61, 122,0.7)'}]}>
@@ -598,15 +605,13 @@ const UserScreen = () => {
       style={[
         globalstyles.safeArea,
         {
-          backgroundColor: theme.background,
-          paddingTop: StatusBar.currentHeight,
+          backgroundColor: theme.background
         },
       ]}
     >
       <Swipper
         viewPagerStyle={{ flex: 1, height: "100%", width: "100%" }}
         swipperStyles={{ flex: 1, height: "100%", width: "100%" }}
-        setPage={() => console.log("test")}
       >
         <FlatList
           key="1"
@@ -636,7 +641,7 @@ const UserScreen = () => {
                     style={[globalstyles.row, { gap: 5, flexWrap: "wrap" }]}
                   >
                     {skills.map((item: any, index: number) => (
-                      <View key={index} style={[globalstyles.rowEven]}>
+                      <View key={item.id} style={[globalstyles.rowEven]}>
                         <Entypo
                           name="dot-single"
                           size={24}
@@ -653,7 +658,7 @@ const UserScreen = () => {
             </UserHeaderComponent>
           )}
           data={userSections}
-          keyExtractor={(index) => index.toString()}
+          keyExtractor={(item, index) => item.id.toString()}
           renderItem={({ item, index }) => (
             <CustomSectionComponent key={index} item={item} />
           )}
@@ -667,14 +672,14 @@ const UserScreen = () => {
                 style={{
                   color: "#448EE4",
                   textAlign: "center",
-                  fontSize: 20,
+                  fontSize: 13,
                   textTransform: "capitalize",
                   fontFamily: "Poppins-Bold",
                   fontWeight: "600",
                 }}
               >
                 {person.account_type == "recruiter"
-                  ? person.full_name + " " + "posts"
+                  ? person.full_name + " " + "jobs"
                   : person.full_name + " " + "reviews"}
               </Text>
 
@@ -689,12 +694,16 @@ const UserScreen = () => {
             </View>
           )}
           data={person.account_type == "recruiter" ? posts : reviews}
-          keyExtractor={(index) => index.toString()}
+          keyExtractor={(item) =>
+            person.account_type == "recruiter"
+              ? item.post_id.toString() 
+              : item.review_id.toString() 
+          }
           renderItem={({ item, index }) =>
             person.account_type == "recruiter" ? (
-              <JobPostCard key={index} item={item} />
+              <JobPostCard item={item} />
             ) : (
-              <ReviewCard key={index} item={item} />
+              <ReviewCard  item={item} />
             )
           }
         />

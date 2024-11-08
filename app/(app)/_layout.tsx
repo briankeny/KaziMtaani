@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import { Redirect,Tabs } from "expo-router";
+import { Image } from "react-native";
 import { useSelector } from "react-redux";
 import { TabBarIcon } from "@/kazisrc/components/navigation/TabBarIcon";
+import { AiIcon } from "@/kazisrc/images/images";
 
 export default function TabLayout() {
   const { theme } = useSelector((state: any) => state.theme);
@@ -55,6 +57,18 @@ export default function TabLayout() {
                 color={focused ? "orange" : theme.text}
               />
             ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="(ai)"
+          options={{
+            title: "AI",
+            tabBarIcon: ({ color, focused }) => 
+            <Image style={{width:40,
+              borderRadius:20,
+              backgroundColor: focused ? 'orange' : theme.card,
+              height:40}} source={AiIcon}  />
           }}
         />
 

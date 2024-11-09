@@ -218,13 +218,22 @@ const UserScreen = () => {
               { overflow: "hidden", width: "65%", paddingHorizontal: 5 },
             ]}
           >
-            <Text
+            <View style={[globalstyles.row,{gap:10}]}>
+              <Text
               numberOfLines={2}
               ellipsizeMode="tail"
               style={{ fontFamily: "Poppins-Bold", color: theme.text }}
             >
               {item.recruiter.full_name}
             </Text>
+
+            <Checkmark
+              tier={person.verification_badge}
+              size={18}
+              issuperuser={person.is_superuser}
+            />
+          </View>
+         
             <Text
               numberOfLines={1}
               ellipsizeMode="tail"
@@ -485,7 +494,7 @@ const UserScreen = () => {
               {person.full_name}
             </Text>
             <Checkmark
-              tier={person.tier}
+              tier={person.verification_badge}
               size={26}
               issuperuser={person.is_superuser}
             />

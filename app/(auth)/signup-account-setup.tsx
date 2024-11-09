@@ -11,6 +11,7 @@ import { validationBuilder } from '@/kazisrc/utils/validator';
 import { useLocalSearchParams, router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, View, TouchableOpacity,Text, Pressable, ScrollView } from "react-native";
+import { TextInput } from 'react-native-gesture-handler';
 import { useSelector } from 'react-redux';
 
 const SignUpScreen = () => {
@@ -122,8 +123,7 @@ const SignUpScreen = () => {
             status: "error",
             content: "Please try again later",
           })
-        
-          router.replace('/(auth)/')
+
         }
         
     },[isError])
@@ -200,7 +200,6 @@ const SignUpScreen = () => {
            placeholder="ex. abc@xyz.com"
            errorMessage = { errors.email ? 'Email address is required!' : ''}
          />
-    
      
               <TaggedInput
                 onChangeText={(val:any)=>setPassword(val)}

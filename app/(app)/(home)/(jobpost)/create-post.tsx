@@ -96,10 +96,10 @@ const JobPostCreateScreen = () => {
         const result = await pickImage();
         if (!result.canceled) {
           const img = result?.assets[0]?.uri ? result.assets[0].uri : ''
-          const imgtype = img ?  img.split('.')[-1] : ''
-          img &&  setNewImage(true);
-          img && setImage(img);
-          imgtype && setImageType(imageType)
+          const imgtype =  img.split('ImagePicker/')[1].split('.')[1]
+          setNewImage(true);
+          setImage(img);
+          setImageType(imgtype)
         }
       } catch (error: any) {}
     }
@@ -172,6 +172,7 @@ const JobPostCreateScreen = () => {
             }
             images.push(img)
         }
+        console.log(images)
         const dataToSubmit =imageAndBodyConstructor({content:validated,images:images,uploadname:["job_picture"]});
         const resp = await postData({data:dataToSubmit,endpoint:'/job-post-create/'}).unwrap()
         if(resp){
@@ -297,14 +298,14 @@ const JobPostCreateScreen = () => {
             pickerAction:(val:any) => setCategory(val)})}
 
         <RenderTaggedInput
-        maxLength={300}
+        maxLength={500}
           onBlur={()=>setFocus('')}
           onFocus={()=>setFocus('desc')}
           taggedInputContainerStyles={[globalstyles.columnCenter,{
             padding:5,minHeight:80,
           borderColor:focused == 'desc'?'orange':'#888'
           }]}
-          taggedInputStyles={{textAlign:'center'}}
+          taggedInputStyles={{textAlign:'left',padding:4}}
           value={description}
           onChangeText={(val)=>setDescription(val)}
           placeholder="Write a  brief description about the job here here ..."

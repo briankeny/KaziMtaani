@@ -23,10 +23,11 @@ export function Checkmark ({
     return(
      <MaterialIcons name="verified"
        style={[
-        issuperuser && {color:'gray'},
+      
         tier == 'tier_one' && {color:'#448EE4'},
         tier == 'tier_two' && {color:'rgba(230, 115, 0,0.7)'},
         tier == 'tier_three' && {color:'rgba(0,105,0.1)'},
+        issuperuser && {color:'gray'},
         checkStyles
        ]}
      color={color} 

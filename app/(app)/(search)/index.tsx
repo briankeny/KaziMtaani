@@ -68,7 +68,7 @@ export default function SearchScreen() {
     longitudeDelta: LONGITUDE_DELTA,
   });
 
-  function mapAction() {}
+  // function mapAction() {}
 
   function mapPointPress(event: any) {
     // console.log(event)

@@ -24,7 +24,7 @@ const authSlice = createSlice({
         state.myLocation = action.payload
       },
       setAuthScreenIndex: (state,action)=> {
-        state.myLocation = action.payload
+        state.authscreen_index = action.payload
       },
       setOnlineStatus:(state,action)=>{
         state.onlineStatus = action.payload

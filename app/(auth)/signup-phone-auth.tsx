@@ -11,9 +11,10 @@ import { SafeAreaView, View, TouchableOpacity,Text,TextInput } from "react-nativ
 import { useSelector } from "react-redux";
 
 export default function NumberVerification() {
+  const dispatch = useAppDispatch()
     const {theme, isNightMode} = useSelector((state:any)=>state.theme)
     const [ postData , {isError,isLoading,isSuccess,error,data}] = usePostNoAuthMutation();
-    const dispatch = useAppDispatch()
+   
     const [errors,setErrors] = useState <any>({})
     const [focused,setFocus]  = useState<string>('')
     const { openModal, modalStatus, modalHeader, modalContent } = useSelector(

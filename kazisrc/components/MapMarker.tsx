@@ -54,7 +54,7 @@ const MapMarker = ({ latitude=1,
             </Text>
               
             </View>
-            {<View style={{backgroundColor:'rgba(0,105,0,1)',
+            {person&& <View style={{backgroundColor:'rgba(0,105,0,1)',
                 width:20,height:8, borderRadius:20,
                }}>
                   <Text style={{color:'#fff', fontWeight:'800',

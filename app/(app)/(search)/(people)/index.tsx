@@ -88,7 +88,7 @@ function PeopleCard({person}:any){
               {person?.full_name}
             </Text>
                 <Checkmark
-                tier={person.tier}
+                tier={person.verification_badge}
                 size={20}
                 issuperuser={person.is_superuser}
                 />

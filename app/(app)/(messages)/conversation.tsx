@@ -95,7 +95,7 @@ export default function ChatScreen () {
            }
           images.push(img)
         }
-
+        console.log(images)
         const dataToSubmit =imageAndBodyConstructor({content:validated,images:images,uploadname:["media"]});
         const resp = await postData({data:dataToSubmit,endpoint:'/new-message/'}).unwrap()
         if(resp){
@@ -115,10 +115,10 @@ export default function ChatScreen () {
       const result:any = await pickImage();
         if (!result.canceled) {
           const img = result?.assets[0]?.uri ? result.assets[0].uri : ''
-          const imgtype = img ?  img.split('.')[-1] : ''
-          img &&  setImageSelected(true);
-          img && setImage(img);
-          imgtype && setImageType(imageType)
+          const imgtype =  img.split('ImagePicker/')[1].split('.')[1]
+          setImageSelected(true);
+          setImage(img);
+          setImageType(imgtype)
         }
     } catch (err) {
     }
@@ -212,7 +212,6 @@ export default function ChatScreen () {
     )
   }
   
-
   return (
     <SafeAreaView
     style={[globalstyles.safeArea,{ backgroundColor: theme.background }]}>
@@ -221,6 +220,10 @@ export default function ChatScreen () {
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
+          ListFooterComponent={()=>
+            <View style={[{marginTop:80}]}>
+               <Text style={{color:theme.text}}></Text>
+            </View>}
           data={chatMessages}
           renderItem={
             ({item,index})=>{

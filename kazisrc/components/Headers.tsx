@@ -35,6 +35,7 @@ export function SignupHeader() {
   const steps = [{ title: `Step 1` }, { title: `Step 2` }, { title: `Final` }];
   const { authscreen_index } = useSelector((state: any) => state.auth);
   const { theme, isNightMode } = useSelector((state: any) => state.theme);
+  console.log(authscreen_index)
   return (
     <SafeAreaView
       style={[
@@ -445,8 +446,8 @@ export function MyDrawer(props: any) {
             </Text>
             <Checkmark
               checkStyles={{ paddingHorizontal: 8, marginTop: 3 }}
-              size={24}
-              tier={userData.tier}
+              size={20}
+              tier={userData.verification_badge}
               issuperuser={userData.is_superuser}
             />
           </View>

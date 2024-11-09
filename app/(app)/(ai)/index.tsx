@@ -9,7 +9,7 @@ import { globalstyles } from "@/kazisrc/styles/styles";
 import { pickImage, randomKeyGenerator, imageAndBodyConstructor, dateFormater, formatDate } from "@/kazisrc/utils/utils";
 import { Entypo } from "@expo/vector-icons";
 
-import { SafeAreaView, FlatList, View, Text,Image, RefreshControl, Dimensions, Pressable, TextInput } from "react-native";
+import { SafeAreaView, FlatList, View, Text,Image, RefreshControl, Dimensions, Pressable } from "react-native";
 import { useSelector } from "react-redux";
 import { removeSpace, validationBuilder } from "@/kazisrc/utils/validator";
 
@@ -87,7 +87,6 @@ export default function AiConversationScreen(){
            }
           images.push(img)
         }
-       console.log(images)
        const submit = validationBuilder(rules)
        const data:any = imageAndBodyConstructor ({content:submit,images:images,uploadname:['image']})
        const resp = await askAI({data:data,endpoint:'/prompt-kaziMtaani-AI/'}).unwrap()
@@ -136,10 +135,6 @@ export default function AiConversationScreen(){
     }
     }
    }
-
-   useEffect(()=>{
-    console.log(aiConversation)
-   },[])
 
     function GreetingHeader(){
         return (
@@ -208,7 +203,7 @@ export default function AiConversationScreen(){
             onSubmit = {promptAI} 
             onAttachImage = {openImagePicker} 
             value={prompt}
-            placeholder ={'Ask anything ...'}
+            placeholder ={'Ask Ai anything ...'}
             editable = {true} 
             placeholderTextColor = '#999'
             maxLength={200} 
@@ -288,14 +283,16 @@ function AIMessage({theme,item,time}:AIMessageProps){
 
       <View style={[{padding:5}]}>
         <Text
-         selectable={true}
+          selectable={true}
         style={{fontSize:18,color:theme.text}}>
            {item.content}
         </Text>
       </View>
 
       <View style={[globalstyles.columnEnd]}>
-        <Text style={{fontSize:11,fontWeight:'400',color:'#888'}}>
+        <Text
+        selectable={true}
+        style={{fontSize:11,fontWeight:'400',color:'#888'}}>
             {time}
         </Text>
       </View>

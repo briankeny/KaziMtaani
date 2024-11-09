@@ -22,7 +22,8 @@
       },
       "permissions": [
         "ACCESS_FINE_LOCATION"
-      ]
+      ],
+      "package": "com.mon_zero.KaziMtaani"
     },
     "web": {
       "bundler": "metro",
@@ -34,6 +35,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "488608a2-0e89-4270-b845-60c66327ed88"
+      }
     }
   }
 }

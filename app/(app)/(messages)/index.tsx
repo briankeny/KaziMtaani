@@ -13,6 +13,7 @@ import { clearModal, rendermodal } from '@/kazisrc/store/slices/modalSlice';
 import Toast from '@/kazisrc/components/Toast';
 import { RenderButtonRow } from '@/kazisrc/components/Buttons';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Checkmark } from '@/kazisrc/components/Checkmark';
 
 
 const ConversationsScreen = () => {
@@ -139,10 +140,19 @@ const ConversationsScreen = () => {
           }
         </View>
         
-        <View style={[globalstyles.column,{width:'80%'}]}>   
+        <View style={[globalstyles.column,{width:'80%'}]}>  
+           
+          <View  style={[globalstyles.row,{gap:10}]}>
         <Text style={{color:theme.text,fontFamily:'Poppins-Bold'}}>
           {participant?.full_name}
         </Text>
+        <Checkmark
+                tier={participant.verification_badge}
+                size={18}
+                issuperuser={item.is_superuser}
+                />
+          </View>
+
         <Text 
          numberOfLines={1}
          ellipsizeMode='tail'

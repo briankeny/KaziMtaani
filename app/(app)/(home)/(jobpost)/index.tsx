@@ -228,14 +228,14 @@ export default function JobPostsAdminScreen() {
               />
             ) : (
               <View
-                style={{
+                style={[globalstyles.columnCenter,{
                   height: 60,
                   width: 60,
                   borderRadius: 30,
                   backgroundColor: "orange",
-                }}
+                }]}
               >
-                <Text style={{ fontFamily: "Poppins-Bold", fontSize: 15 }}>
+                <Text style={{ fontFamily: "Poppins-Bold", fontSize: 15,color:'#fff' }}>
                   {userData?.full_name?.slice(0, 1)}
                 </Text>
               </View>

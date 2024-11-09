@@ -74,7 +74,7 @@ export default function HomeScreen() {
 
   const { width, height } = Dimensions.get('window');
   const ASPECT_RATIO = width / height;
-  const LATITUDE_DELTA = 0.8; //Very high zoom level
+  const LATITUDE_DELTA = 0.8; 
   const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
   
   const [userLocation,setUserLocation] = useState<any>({
@@ -699,10 +699,7 @@ export default function HomeScreen() {
                     goToProfile={()=>goToScreen(item)}
                     latitude={item.latitude}
                     longitude={item.longitude}
-                    person={ 
-                      userData.account_type == 'recruiter' ? 
-                      userData.user_id == item.user_id ? true: false: 
-                      false}
+                    person={ userData.account_type == 'recruiter' && userData.user_id == item.user_id ? true: false}
                     title={ userData.account_type == 'recruiter' ?  item.full_name: item.title}
                     industry={item.industry}
                     description={ userData.account_type == 'recruiter' ? item.bio :item.description}
